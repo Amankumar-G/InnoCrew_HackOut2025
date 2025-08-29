@@ -1,0 +1,77 @@
+/* Modern slim scrollbar for Webkit browsers (Chrome, Safari, Opera) */
+.chat-container {
+    overflow-y: auto; /* Enable vertical scrolling */
+    height: 70vh; /* Define the height */
+    scrollbar-width: thin; /* Firefox: thin scrollbar */
+    scrollbar-color: #A29BFE #29293D; /* Firefox: thumb color and track color */
+  }
+  
+  /* For Webkit browsers */
+  .chat-container::-webkit-scrollbar {
+    width: 8px; /* Set the width of the scrollbar */
+  }
+  
+  .chat-container::-webkit-scrollbar-thumb {
+    background-color: #A29BFE; /* Color of the scrollbar thumb */
+    border-radius: 10px; /* Rounded corners for the thumb */
+  }
+  
+  .chat-container::-webkit-scrollbar-track {
+    background-color: #29293D; /* Color of the track behind the thumb */
+    border-radius: 10px; /* Rounded corners for the track */
+  }
+  
+  .chat-container::-webkit-scrollbar-thumb:hover {
+    background-color: #7f73ff; /* Darken thumb color when hovered */
+  }
+  
+  /* Add this inside your app.css or global styles */
+
+.gutter {
+  background-color: white;
+  background-clip: padding-box;
+  cursor:ew-resize;
+}
+
+.gutter:hover {
+  background-color: #888;
+}
+
+.loader {
+  border: 6px solid #ccc;
+  border-top: 6px solid #A29BFE;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #555;
+    animation: bounce 1.4s infinite ease-in-out both;
+  }
+  .dot:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+  .dot:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+  .dot:nth-child(3) {
+    animation-delay: 0;
+  }
+  @keyframes bounce {
+    0%, 80%, 100% {
+      transform: scale(0);
+    }
+    40% {
+      transform: scale(1);
+    }
+  }
