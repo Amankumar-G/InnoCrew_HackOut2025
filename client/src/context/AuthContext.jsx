@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { authAPI } from "../utils/api";
 
 const AuthContext = createContext();
 
@@ -24,96 +25,77 @@ export const AuthProvider = ({ children }) => {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
 
-      // TODO: Verify token with backend
-      // const verifyToken = async () => {
-      //   try {
-      //     const response = await fetch('/api/auth/verify', {
-      //       headers: { Authorization: `Bearer ${savedToken}` }
-      //     });
-      //     if (!response.ok) {
-      //       logout();
-      //     }
-      //   } catch (error) {
-      //     logout();
-      //   }
-      // };
-      // verifyToken();
+      // Verify token with backend
+      const verifyToken = async () => {
+        try {
+          const result = await authAPI.getProfile(savedToken);
+          if (!result.success) {
+            logout();
+          } else {
+            setUser(result.data);
+            localStorage.setItem("user", JSON.stringify(result.data));
+          }
+        } catch (error) {
+          console.error("Token verification failed:", error);
+          logout();
+        }
+      };
+      verifyToken();
     }
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const register = async (name, email, password, phone, location, organization) => {
     setLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
-      // const data = await response.json();
-      // if (!response.ok) throw new Error(data.message);
+      const result = await authAPI.register({
+        name,
+        email,
+        password,
+        phone,
+        location,
+        organization,
+      });
 
-      // Dummy authentication for now
-      if (email === "demo@example.com" && password === "password") {
-        const dummyUser = {
-          id: "1",
-          name: "Demo User",
-          email: "demo@example.com",
-          avatar:
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-          role: "user",
-        };
-        const dummyToken = "dummy-jwt-token-" + Date.now();
+      if (result.success) {
+        setUser(result.data.user);
+        setToken(result.data.token);
+        localStorage.setItem("authToken", result.data.token);
+        localStorage.setItem("user", JSON.stringify(result.data.user));
 
-        setUser(dummyUser);
-        setToken(dummyToken);
-        localStorage.setItem("authToken", dummyToken);
-        localStorage.setItem("user", JSON.stringify(dummyUser));
-
-        return { success: true, user: dummyUser };
+        return { success: true, user: result.data.user };
       } else {
-        throw new Error("Invalid credentials");
+        return { success: false, error: result.error };
       }
     } catch (error) {
+      console.error("Registration error:", error);
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
     }
   };
 
-  const signup = async (name, email, password) => {
+  const login = async (email, password) => {
     setLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/auth/signup', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ name, email, password })
-      // });
-      // const data = await response.json();
-      // if (!response.ok) throw new Error(data.message);
+      const result = await authAPI.login({ email, password });
 
-      // Dummy signup for now
-      const dummyUser = {
-        id: Date.now().toString(),
-        name: name,
-        email: email,
-        avatar:
-          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-        role: "user",
-      };
-      const dummyToken = "dummy-jwt-token-" + Date.now();
+      if (result.success) {
+        setUser(result.data.user);
+        setToken(result.data.token);
+        
+        console.log(result.data)
+        localStorage.setItem("authToken", result.data.token);
+        localStorage.setItem("user", JSON.stringify(result.data.user));
 
-      setUser(dummyUser);
-      setToken(dummyToken);
-      localStorage.setItem("authToken", dummyToken);
-      localStorage.setItem("user", JSON.stringify(dummyUser));
-
-      return { success: true, user: dummyUser };
+        return { success: true, user: result.data.user };
+      } else {
+        return { success: false, error: result.error };
+      }
     } catch (error) {
+      console.error("Login error:", error);
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -125,35 +107,41 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
-
-    // TODO: Call logout endpoint
-    // fetch('/api/auth/logout', {
-    //   method: 'POST',
-    //   headers: { Authorization: `Bearer ${token}` }
-    // });
   };
 
   const updateProfile = async (userData) => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/auth/profile', {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     Authorization: `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify(userData)
-      // });
-      // const data = await response.json();
-      // if (!response.ok) throw new Error(data.message);
+      const result = await authAPI.updateProfile(userData, token);
 
-      // Dummy update for now
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      if (result.success) {
+        const updatedUser = { ...user, ...result.data };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
 
-      return { success: true, user: updatedUser };
+        return { success: true, user: updatedUser };
+      } else {
+        return { success: false, error: result.error };
+      }
     } catch (error) {
+      console.error("Profile update error:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getProfile = async () => {
+    try {
+      const result = await authAPI.getProfile(token);
+
+      if (result.success) {
+        setUser(result.data);
+        localStorage.setItem("user", JSON.stringify(result.data));
+        
+        return { success: true, user: result.data };
+      } else {
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error("Profile fetch error:", error);
       return { success: false, error: error.message };
     }
   };
@@ -163,9 +151,10 @@ export const AuthProvider = ({ children }) => {
     token,
     loading,
     login,
-    signup,
+    register,
     logout,
     updateProfile,
+    getProfile,
     isAuthenticated: !!user,
   };
 

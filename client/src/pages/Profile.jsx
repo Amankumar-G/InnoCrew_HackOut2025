@@ -19,111 +19,116 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useAppContext } from "../context/AppContext";
 
+// API Base URL
+const API_BASE_URL = "http://localhost:8000/api";
+
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, token, getProfile } = useAuth();
   const { theme } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Dummy data - replace with API calls
+  // User stats from the actual user data
   const [userStats, setUserStats] = useState({
-    points: 2847,
-    rank: 15,
-    totalReports: 23,
-    resolvedReports: 19,
-    carbonCredits: 156,
-    mangroveArea: 2.3
+    points: 0,
+    rank: 0,
+    totalReports: 0,
+    resolvedReports: 0,
+    carbonCredits: 0,
+    mangroveArea: 0
   });
 
-  const [complaints, setComplaints] = useState([
-    {
-      id: 1,
-      type: "Illegal Cutting",
-      location: "Sundarbans, Bangladesh",
-      severity: "High",
-      status: "Resolved",
-      date: "2024-01-15",
-      description: "Reported illegal mangrove cutting in protected area",
-      points: 150,
-      carbonImpact: 2.5
-    },
-    {
-      id: 2,
-      type: "Pollution Incident",
-      location: "Mangrove Bay, India",
-      severity: "Medium",
-      status: "Under Investigation",
-      date: "2024-01-12",
-      description: "Oil spill detected near mangrove roots",
-      points: 75,
-      carbonImpact: 1.2
-    },
-    {
-      id: 3,
-      type: "Restoration Success",
-      location: "Mekong Delta, Vietnam",
-      severity: "Positive",
-      status: "Completed",
-      date: "2024-01-10",
-      description: "Successfully planted 500 mangrove saplings",
-      points: 300,
-      carbonImpact: 5.0
-    },
-    {
-      id: 4,
-      type: "Habitat Destruction",
-      location: "Florida Keys, USA",
-      severity: "High",
-      status: "Resolved",
-      date: "2024-01-08",
-      description: "Construction activity damaging mangrove habitat",
-      points: 200,
-      carbonImpact: 3.8
-    },
-    {
-      id: 5,
-      type: "Water Quality Issue",
-      location: "Great Barrier Reef, Australia",
-      severity: "Medium",
-      status: "Under Investigation",
-      date: "2024-01-05",
-      description: "Suspicious water discoloration near mangroves",
-      points: 100,
-      carbonImpact: 1.5
-    }
-  ]);
+  const [complaints, setComplaints] = useState([]);
 
-  // TODO: Replace with actual API calls
-  // useEffect(() => {
-  //   const fetchUserStats = async () => {
-  //     setIsLoading(true);
-  //     try {
-  //       const response = await fetch('/api/user/stats', {
-  //         headers: { Authorization: `Bearer ${token}` }
-  //       });
-  //       const data = await response.json();
-  //       setUserStats(data);
-  //     } catch (error) {
-  //       console.error('Error fetching user stats:', error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
+  // Fetch user profile and stats
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!token) return;
+      
+      setIsLoading(true);
+      try {
+        // Fetch updated user profile
+        const profileResult = await getProfile();
+        if (profileResult.success) {
+          const userData = profileResult.user;
+          
+          // Calculate stats from user data
+          setUserStats({
+            points: userData.points || 0,
+            rank: userData.rank || 0,
+            totalReports: userData.totalReports || 0,
+            resolvedReports: userData.resolvedReports || 0,
+            carbonCredits: userData.carbonCredits?.earned || 0,
+            mangroveArea: userData.mangroveArea || 0
+          });
+        }
 
-  //   const fetchComplaints = async () => {
-  //     try {
-  //       const response = await fetch('/api/user/complaints', {
-  //         headers: { Authorization: `Bearer ${token}` }
-  //       });
+        // TODO: Fetch user complaints/reports from API
+        // For now, using dummy data until complaints API is implemented
+        const dummyComplaints = [
+          {
+            id: 1,
+            type: "Illegal Cutting",
+            location: user?.location || "Unknown Location",
+            severity: "High",
+            status: "Resolved",
+            date: "2024-01-15",
+            description: "Reported illegal mangrove cutting in protected area",
+            points: 150,
+            carbonImpact: 2.5
+          },
+          {
+            id: 2,
+            type: "Pollution Incident",
+            location: user?.location || "Unknown Location",
+            severity: "Medium",
+            status: "Under Investigation",
+            date: "2024-01-12",
+            description: "Oil spill detected near mangrove roots",
+            points: 75,
+            carbonImpact: 1.2
+          },
+          {
+            id: 3,
+            type: "Restoration Success",
+            location: user?.location || "Unknown Location",
+            severity: "Positive",
+            status: "Completed",
+            date: "2024-01-10",
+            description: "Successfully planted 500 mangrove saplings",
+            points: 300,
+            carbonImpact: 5.0
+          }
+        ];
+        
+        setComplaints(dummyComplaints);
+        
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [token, user?.location]);
+
+  // TODO: Replace with actual API calls when complaints endpoint is available
+  // const fetchComplaints = async () => {
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/user/complaints`, {
+  //       headers: { 
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json'
+  //       }
+  //     });
+  //     if (response.ok) {
   //       const data = await response.json();
   //       setComplaints(data);
-  //     } catch (error) {
-  //       console.error('Error fetching complaints:', error);
   //     }
-  //   };
-
-  //   fetchUserStats();
-  //   fetchComplaints();
-  // }, [token]);
+  //   } catch (error) {
+  //     console.error('Error fetching complaints:', error);
+  //   }
+  // };
 
   const getSeverityColor = (severity) => {
     switch (severity) {
@@ -166,6 +171,17 @@ const Profile = () => {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -199,7 +215,7 @@ const Profile = () => {
                 <p className={`text-sm ${
                   theme === "dark" ? "text-gray-400" : "text-gray-600"
                 }`}>
-                  Conservation Hero
+                  {user.role === 'admin' ? 'Administrator' : 'Conservation Hero'}
                 </p>
               </div>
 
@@ -216,38 +232,45 @@ const Profile = () => {
                   </span>
                 </div>
                 
-                <div className="flex items-center space-x-3">
-                  <FaPhone className={`w-4 h-4 ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`} />
-                  <span className={`text-sm ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    +1 (555) 123-4567
-                  </span>
-                </div>
+                {user.phone && (
+                  <div className="flex items-center space-x-3">
+                    <FaPhone className={`w-4 h-4 ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    }`} />
+                    <span className={`text-sm ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {user.phone}
+                    </span>
+                  </div>
+                )}
                 
-                <div className="flex items-center space-x-3">
-                  <FaMapMarkerAlt className={`w-4 h-4 ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`} />
-                  <span className={`text-sm ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Mumbai, India
-                  </span>
-                </div>
+                {user.location && (
+                  <div className="flex items-center space-x-3">
+                    <FaMapMarkerAlt className={`w-4 h-4 ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    }`} />
+                    <span className={`text-sm ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {user.location}
+                    </span>
+                  </div>
+                )}
                 
-                <div className="flex items-center space-x-3">
-                  <FaCalendarAlt className={`w-4 h-4 ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`} />
-                  <span className={`text-sm ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  }`}>
-                    Member since Jan 2024
-                  </span>
-                </div>
+                {user.organization && (
+                  <div className="flex items-center space-x-3">
+                    <FaTree className={`w-4 h-4 ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    }`} />
+                    <span className={`text-sm ${
+                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    }`}>
+                      {user.organization}
+                    </span>
+                  </div>
+                )}
+
               </div>
 
               {/* Quick Stats */}
@@ -339,7 +362,7 @@ const Profile = () => {
                       Global Rank
                     </p>
                     <p className="text-2xl font-bold text-purple-600">
-                      #{userStats.rank}
+                      {userStats.rank || 'Not Available'}
                     </p>
                   </div>
                 </div>
@@ -348,7 +371,7 @@ const Profile = () => {
                   <span className={`text-sm ${
                     theme === "dark" ? "text-gray-300" : "text-gray-600"
                   }`}>
-                    Top 5% of conservationists
+                    {userStats.rank ? 'Top 5% of conservationists' : 'Rank not available yet'}
                   </span>
                 </div>
               </div>
@@ -376,75 +399,91 @@ const Profile = () => {
                 </div>
               </div>
 
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {complaints.map((complaint) => (
-                  <div
-                    key={complaint.id}
-                    className={`${
-                      theme === "dark" 
-                        ? "bg-gray-700/60 border-gray-600" 
-                        : "bg-gray-50/60 border-gray-200"
-                    } rounded-lg p-4 border hover:shadow-md transition-all duration-200`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h4 className={`font-semibold ${
-                            theme === "dark" ? "text-white" : "text-gray-800"
-                          }`}>
-                            {complaint.type}
-                          </h4>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(complaint.severity)}`}>
-                            {complaint.severity}
-                          </span>
-                        </div>
-                        <p className={`text-sm mb-2 ${
-                          theme === "dark" ? "text-gray-300" : "text-gray-600"
-                        }`}>
-                          {complaint.description}
-                        </p>
-                        <div className="flex items-center space-x-4 text-xs">
-                          <span className={`flex items-center space-x-1 ${
-                            theme === "dark" ? "text-gray-400" : "text-gray-500"
-                          }`}>
-                            <FaMapMarkerAlt className="w-3 h-3" />
-                            <span>{complaint.location}</span>
-                          </span>
-                          <span className={`flex items-center space-x-1 ${
-                            theme === "dark" ? "text-gray-400" : "text-gray-500"
-                          }`}>
-                            <FaCalendarAlt className="w-3 h-3" />
-                            <span>{complaint.date}</span>
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right ml-4">
-                        <div className="flex items-center space-x-1 mb-2">
-                          {getStatusIcon(complaint.status)}
-                          <span className={`text-sm font-semibold ${getStatusColor(complaint.status)}`}>
-                            {complaint.status}
-                          </span>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-1">
-                            <FaTrophy className="w-3 h-3 text-yellow-500" />
-                            <span className="text-xs font-semibold text-yellow-600">
-                              +{complaint.points} pts
+              {complaints.length === 0 ? (
+                <div className="text-center py-12">
+                  <FaTree className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className={`text-lg ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-600"
+                  }`}>
+                    No reports yet
+                  </p>
+                  <p className={`text-sm ${
+                    theme === "dark" ? "text-gray-400" : "text-gray-500"
+                  }`}>
+                    Start reporting mangrove incidents to see them here
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {complaints.map((complaint) => (
+                    <div
+                      key={complaint.id}
+                      className={`${
+                        theme === "dark" 
+                          ? "bg-gray-700/60 border-gray-600" 
+                          : "bg-gray-50/60 border-gray-200"
+                      } rounded-lg p-4 border hover:shadow-md transition-all duration-200`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h4 className={`font-semibold ${
+                              theme === "dark" ? "text-white" : "text-gray-800"
+                            }`}>
+                              {complaint.type}
+                            </h4>
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(complaint.severity)}`}>
+                              {complaint.severity}
                             </span>
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <FaWater className="w-3 h-3 text-blue-500" />
-                            <span className="text-xs font-semibold text-blue-600">
-                              {complaint.carbonImpact} CO₂
+                          <p className={`text-sm mb-2 ${
+                            theme === "dark" ? "text-gray-300" : "text-gray-600"
+                          }`}>
+                            {complaint.description}
+                          </p>
+                          <div className="flex items-center space-x-4 text-xs">
+                            <span className={`flex items-center space-x-1 ${
+                              theme === "dark" ? "text-gray-400" : "text-gray-500"
+                            }`}>
+                              <FaMapMarkerAlt className="w-3 h-3" />
+                              <span>{complaint.location}</span>
                             </span>
+                            <span className={`flex items-center space-x-1 ${
+                              theme === "dark" ? "text-gray-400" : "text-gray-500"
+                            }`}>
+                              <FaCalendarAlt className="w-3 h-3" />
+                              <span>{complaint.date}</span>
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right ml-4">
+                          <div className="flex items-center space-x-1 mb-2">
+                            {getStatusIcon(complaint.status)}
+                            <span className={`text-sm font-semibold ${getStatusColor(complaint.status)}`}>
+                              {complaint.status}
+                            </span>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-1">
+                              <FaTrophy className="w-3 h-3 text-yellow-500" />
+                              <span className="text-xs font-semibold text-yellow-600">
+                                +{complaint.points} pts
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <FaWater className="w-3 h-3 text-blue-500" />
+                              <span className="text-xs font-semibold text-blue-600">
+                                {complaint.carbonImpact} CO₂
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
