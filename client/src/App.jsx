@@ -14,6 +14,7 @@ import ScrollToTop from "./components/common/ScrollToTop";
 import { AppProvider } from "./context/AppContext";
 import { AuthProvider } from "./context/AuthContext";
 import Pdf from "./pages/Pdf";
+import ReportIncident from "./pages/ReportIncident";
 
 // Lazy load components for better performance
 const LazyHome = React.lazy(() => import("./pages/Home"));
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
       {
         path: "/pdfChat",
         element: <Pdf />,
+      },
+      {
+        path: "/reportIncident",
+        element: <ReportIncident />,
       },
     ],
   },
