@@ -22,8 +22,6 @@ import LoadingSpinner from "../components/common/LoadingSpinner";
 import ComplaintModal from "../components/ComplaintModal";
 import { fetchComplaintDetails } from "../utils/complaintApi";
 
-// API Base URL
-const API_BASE_URL = "${import.meta.env.VITE_URL}/api";
 
 const Profile = () => {
   const { user, token, getProfile } = useAuth();
@@ -45,175 +43,13 @@ const Profile = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState("");
-  // Handle complaint click to show modal and fetch details
-  const dummyComplaintDetails = {
-    location: { lat: 19.12, lng: 72.85 },
-    verification: {
-      verified: true,
-      imageCheck: true,
-      geoCheck: true,
-      textCheck: true,
-      severity: "medium",
-      confidenceScore: 0.85,
-      verificationSummary: {
-        complaintId: "1756541289709",
-        timestamp: "2025-08-30T08:08:09.709Z",
-        status: "verified",
-        severity: "medium",
-        checks: {
-          image: {
-            passed: true,
-            confidence: 0.85,
-            details: {
-              imageCheck: true,
-              confidence: 0.85,
-              detectedIssues: ["Waste dumping in mangrove areas"],
-              analysisDetails: "The analysis of the provided images shows clear signs of waste accumulation in the mangrove ecosystem. There are visible plastic debris and other waste materials scattered among the mangrove roots, indicating illegal dumping activities.",
-              evidenceLevel: "strong",
-              visualIndicators: ["Plastic debris", "Waste materials among mangrove roots", "Discoloration of water near waste"]
-            }
-          },
-          geo: {
-            passed: true,
-            inMangroveZone: false,
-            details: {
-              geoCheck: true,
-              isInMangroveZone: false,
-              recentChangesDetected: false,
-              geoDetails: "The location is adjacent to a designated mangrove protected zone but not within it. No recent changes such as deforestation or construction have been detected in the area.",
-              proximityToMangroves: "adjacent",
-              environmentalSensitivity: "high",
-              landUseCompliance: true
-            }
-          },
-          text: {
-            passed: true,
-            preliminarySeverity: 7,
-            details: {
-              textCheck: true,
-              preliminarySeverity: 7,
-              severityKeywords: ["cutting"],
-              textAnalysis: "The description is coherent and relevant to environmental issues, specifically regarding illegal deforestation.",
-              categoryMatch: false,
-              urgencyLevel: "medium",
-              credibilityScore: 0.8,
-              detectedThemes: ["deforestation", "illegal activities", "mangrove conservation"]
-            }
-          }
-        },
-        finalVerification: {
-          complaintStatus: "verified",
-          finalSeverity: "medium",
-          overallConfidence: 0.85,
-          verificationReason: "Strong visual evidence of waste dumping, coherent text analysis indicating illegal activities, and the location is adjacent to a mangrove protected zone.",
-          recommendedActions: [
-            "Investigate the waste dumping incident",
-            "Increase surveillance in the adjacent area",
-            "Engage local community in mangrove conservation efforts"
-          ],
-          flagsRaised: [],
-          priorityLevel: "urgent",
-          carbonCreditsEarned: 50
-        },
-        verificationComplete: true
-      },
-      fullAnalysis: {
-        imageAnalysis: {
-          imageCheck: true,
-          confidence: 0.85,
-          detectedIssues: ["Waste dumping in mangrove areas"],
-          analysisDetails: "The analysis of the provided images shows clear signs of waste accumulation in the mangrove ecosystem. There are visible plastic debris and other waste materials scattered among the mangrove roots, indicating illegal dumping activities.",
-          evidenceLevel: "strong",
-          visualIndicators: ["Plastic debris", "Waste materials among mangrove roots", "Discoloration of water near waste"]
-        },
-        geoValidation: {
-          geoCheck: true,
-          isInMangroveZone: false,
-          recentChangesDetected: false,
-          geoDetails: "The location is adjacent to a designated mangrove protected zone but not within it. No recent changes such as deforestation or construction have been detected in the area.",
-          proximityToMangroves: "adjacent",
-          environmentalSensitivity: "high",
-          landUseCompliance: true
-        },
-        textAnalysis: {
-          textCheck: true,
-          preliminarySeverity: 7,
-          severityKeywords: ["cutting"],
-          textAnalysis: "The description is coherent and relevant to environmental issues, specifically regarding illegal deforestation.",
-          categoryMatch: false,
-          urgencyLevel: "medium",
-          credibilityScore: 0.8,
-          detectedThemes: ["deforestation", "illegal activities", "mangrove conservation"]
-        },
-        finalVerification: {
-          complaintStatus: "verified",
-          finalSeverity: "medium",
-          overallConfidence: 0.85,
-          verificationReason: "Strong visual evidence of waste dumping, coherent text analysis indicating illegal activities, and the location is adjacent to a mangrove protected zone.",
-          recommendedActions: [
-            "Investigate the waste dumping incident",
-            "Increase surveillance in the adjacent area",
-            "Engage local community in mangrove conservation efforts"
-          ],
-          flagsRaised: [],
-          priorityLevel: "urgent",
-          carbonCreditsEarned: 50
-        }
-      }
-    },
-    _id: "68b2b1583bd858e4d8800666",
-    user: "68b26912315932a19686fe12",
-    description: "Mangrove trees have been illegally cut down near the river bank.",
-    category: "dumping",
-    media: [
-      {
-        url: "/uploads/odoo/hyl2bvcjsnesoszxxvy2",
-        type: "photo",
-        _id: "68b2b1583bd858e4d8800667"
-      },
-      {
-        url: "/uploads/odoo/cexysogxa5x4hupohlcj",
-        type: "photo",
-        _id: "68b2b1583bd858e4d8800668"
-      },
-      {
-        url: "/uploads/odoo/nfqbf2il74cswqygdpv1",
-        type: "photo",
-        _id: "68b2b1583bd858e4d8800669"
-      }
-    ],
-    damageEstimate: "medium",
-    landmark: "Behind Seaside Colony",
-    status: "verified",
-    timestamp: "2025-08-30T08:07:52.474Z",
-    createdAt: "2025-08-30T08:07:52.490Z",
-    updatedAt: "2025-08-30T08:08:09.726Z",
-    __v: 0
-  };
 
   const handleComplaintClick = (complaint) => {
     setModalError("");
     setModalOpen(true);
     setModalLoading(false);
     // Show dummy data for now
-    setSelectedComplaint(dummyComplaintDetails);
-    // For future, use the real API call:
-    // setModalLoading(true);
-    // try {
-    //   const id = complaint._id || complaint.id;
-    //   const data = await fetchComplaintDetails(id, token);
-    //   if (data.success) {
-    //     setSelectedComplaint(data.data);
-    //   } else {
-    //     setModalError("Failed to load complaint details.");
-    //     setSelectedComplaint(null);
-    //   }
-    // } catch (err) {
-    //   setModalError("Error loading complaint details.");
-    //   setSelectedComplaint(null);
-    // } finally {
-    //   setModalLoading(false);
-    // }
+    setSelectedComplaint(complaint);
   };
 
   const handleModalClose = () => {
@@ -243,47 +79,8 @@ const Profile = () => {
             carbonCredits: userData.carbonCredits?.earned || 0,
             mangroveArea: userData.mangroveArea || 0
           });
+          setComplaints(userData.complaints);
         }
-
-        // TODO: Fetch user complaints/reports from API
-        // For now, using dummy data until complaints API is implemented
-        const dummyComplaints = [
-          {
-            id: 1,
-            type: "Illegal Cutting",
-            location: user?.location || "Unknown Location",
-            severity: "High",
-            status: "Resolved",
-            date: "2024-01-15",
-            description: "Reported illegal mangrove cutting in protected area",
-            points: 150,
-            carbonImpact: 2.5
-          },
-          {
-            id: 2,
-            type: "Pollution Incident",
-            location: user?.location || "Unknown Location",
-            severity: "Medium",
-            status: "Under Investigation",
-            date: "2024-01-12",
-            description: "Oil spill detected near mangrove roots",
-            points: 75,
-            carbonImpact: 1.2
-          },
-          {
-            id: 3,
-            type: "Restoration Success",
-            location: user?.location || "Unknown Location",
-            severity: "Positive",
-            status: "Completed",
-            date: "2024-01-10",
-            description: "Successfully planted 500 mangrove saplings",
-            points: 300,
-            carbonImpact: 5.0
-          }
-        ];
-        
-        setComplaints(dummyComplaints);
         
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -294,24 +91,6 @@ const Profile = () => {
 
     fetchUserData();
   }, [token, user?.location]);
-
-  // TODO: Replace with actual API calls when complaints endpoint is available
-  // const fetchComplaints = async () => {
-  //   try {
-  //     const response = await fetch(`${API_BASE_URL}/user/complaints`, {
-  //       headers: { 
-  //         Authorization: `Bearer ${token}`,
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       setComplaints(data);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching complaints:', error);
-  //   }
-  // };
 
   const getSeverityColor = (severity) => {
     switch (severity) {
@@ -537,20 +316,12 @@ const Profile = () => {
                     <p className={`text-sm ${
                       theme === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}>
-                      Global Rank
+                      Carbon credits
                     </p>
                     <p className="text-2xl font-bold text-purple-600">
-                      {userStats.rank || 'Not Available'}
+                      {userStats.carbonCredits || 'Not Available'}
                     </p>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <FaTree className="w-4 h-4 text-green-500" />
-                  <span className={`text-sm ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-600"
-                  }`}>
-                    {userStats.rank ? 'Top 5% of conservationists' : 'Rank not available yet'}
-                  </span>
                 </div>
               </div>
             </div>
@@ -609,10 +380,10 @@ const Profile = () => {
                             <h4 className={`font-semibold ${
                               theme === "dark" ? "text-white" : "text-gray-800"
                             }`}>
-                              {complaint.type}
+                              {complaint.category}
                             </h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(complaint.severity)}`}>
-                              {complaint.severity}
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(complaint.damageEstimate)}`}>
+                              {complaint.damageEstimate}
                             </span>
                           </div>
                           <p className={`text-sm mb-2 ${
@@ -624,14 +395,9 @@ const Profile = () => {
                             <span className={`flex items-center space-x-1 ${
                               theme === "dark" ? "text-gray-400" : "text-gray-500"
                             }`}>
-                              <FaMapMarkerAlt className="w-3 h-3" />
-                              <span>{complaint.location}</span>
-                            </span>
-                            <span className={`flex items-center space-x-1 ${
-                              theme === "dark" ? "text-gray-400" : "text-gray-500"
-                            }`}>
                               <FaCalendarAlt className="w-3 h-3" />
-                              <span>{complaint.date}</span>
+                              <span>{new Date(complaint.timestamp).toISOString().split("T")[0]
+}</span>
                             </span>
                           </div>
                         </div>
@@ -646,13 +412,7 @@ const Profile = () => {
                             <div className="flex items-center space-x-1">
                               <FaTrophy className="w-3 h-3 text-yellow-500" />
                               <span className="text-xs font-semibold text-yellow-600">
-                                +{complaint.points} pts
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <FaWater className="w-3 h-3 text-blue-500" />
-                              <span className="text-xs font-semibold text-blue-600">
-                                {complaint.carbonImpact} CO₂
+                                +{complaint.verification.verificationSummary.finalVerification.carbonCreditsEarned} pts
                               </span>
                             </div>
                           </div>
