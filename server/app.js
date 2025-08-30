@@ -13,6 +13,7 @@ import { initializeSocket, io } from './config/socket.js';
 import authRoutes from './Router/auth.js'
 import chatRoute from "./Router/chatRouter.js"
 import leaderBoard from "./Router/leaderRouter.js"
+import Report from "./Router/reportsRouter.js"
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -132,6 +133,7 @@ app.get('/api', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/reports',Report)
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
