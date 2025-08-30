@@ -437,28 +437,6 @@ export default function ReportIncident() {
               )}
             </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-center pt-8">
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={!isFormValid || isSubmitting}
-                className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-600 text-white text-lg font-semibold rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-              >
-                {isSubmitting ? (
-                  <>
-                    <FaSpinner className="animate-spin" />
-                    <span>Submitting Report...</span>
-                  </>
-                ) : (
-                  <>
-                    <FaMapMarkedAlt />
-                    <span>Submit Report</span>
-                  </>
-                )}
-              </button>
-            </div>
-
             <div className="bg-gray-50 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Report Progress
@@ -585,6 +563,28 @@ export default function ReportIncident() {
                   </span>
                 </div>
               </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-center pt-8">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!isFormValid || isSubmitting}
+                className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-600 text-white text-lg font-semibold rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    <span>Submitting Report...</span>
+                  </>
+                ) : (
+                  <>
+                    <FaMapMarkedAlt />
+                    <span>Submit Report</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
