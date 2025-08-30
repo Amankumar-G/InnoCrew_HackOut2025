@@ -12,6 +12,7 @@ import passportConfig from './config/passport.js';
 import { initializeSocket, io } from './config/socket.js';
 import authRoutes from './Router/auth.js'
 import chatRoute from "./Router/chatRouter.js"
+import leaderBoard from "./Router/leaderRouter.js"
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -85,6 +86,7 @@ app.use((req, res, next) => {
 
 
 app.use("/api/chat", chatRoute);
+app.use("/api/leaderboard",leaderBoard);
 
 // Route to Emit a Socket Event
 app.post('/api/notify', (req, res) => {
