@@ -5,7 +5,7 @@ import { runPlantationVerificationWorkflow } from "../services/plantationAiVerif
 
 // Run every 30 seconds for testing → "*/30 * * * * *"
 const plantationCronJob = cron.schedule(
-  "*/10 * * * *",
+  "*/10 * * * * *",
   async () => {
     console.log(
       "\n🌱 [PLANTATION CRON START] Checking for unverified plantations..."
@@ -88,7 +88,6 @@ const plantationCronJob = cron.schedule(
 
           // NEW: store the full verification data and summary
           plantation.verificationSummary = verificationData.verificationSummary;
-          plantation.fullVerificationResult = verificationResult.data;
 
           await plantation.save();
 
