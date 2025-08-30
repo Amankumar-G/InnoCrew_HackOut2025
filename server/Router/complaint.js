@@ -12,17 +12,13 @@ router.post(
   upload.array("media"),
   async (req, res) => {
     try {
-      console.log("🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃hiiiiiiiiii");
       const { description, category, location, damageEstimate, landmark } =
         req.body;
 
       // Map uploaded media files
       const mediaFiles = req.files.map((file) => ({
-        url: `/uploads/${file.filename}`,
-        type: file.mimetype.startsWith("video") ? "video" : "photo",
-      const mediaFiles = req.files.map(file => ({
         url: file.path,
-        type: file.mimetype.startsWith("video") ? "video" : "photo"
+        type: file.mimetype.startsWith("video") ? "video" : "photo",
       }));
 
       // Include user ID from authenticated JWT
@@ -37,7 +33,6 @@ router.post(
       });
 
       await complaint.save();
-      console.log("hiiiiii");
 
       return res.status(201).json({
         message: "Complaint submitted successfully",

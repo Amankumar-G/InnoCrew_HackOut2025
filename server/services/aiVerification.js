@@ -1,5 +1,8 @@
 // services/aiVerification.js
-import { runMangroveVerification, createVerificationSummary } from '../Agents/agent.js';
+import {
+  runMangroveVerification,
+  createVerificationSummary,
+} from "../Agents/agent.js";
 
 export async function runVerificationWorkflow(complaint) {
   try {
@@ -13,11 +16,14 @@ export async function runVerificationWorkflow(complaint) {
         // Fix: Extract lat/lng correctly from complaint.location
         lat: complaint.location?.lat || complaint.latitude,
         lng: complaint.location?.lng || complaint.longitude,
-        address: complaint.landmark || complaint.address || `${complaint.location?.lat}, ${complaint.location?.lng}`
+        address:
+          complaint.landmark ||
+          complaint.address ||
+          `${complaint.location?.lat}, ${complaint.location?.lng}`,
       },
       description: complaint.description,
       complaint_category: complaint.category,
-      complaint_date: complaint.createdAt || new Date().toISOString()
+      complaint_date: complaint.createdAt || new Date().toISOString(),
     };
     console.log("Transformed complaintData:", complaintData);
 
@@ -31,22 +37,22 @@ export async function runVerificationWorkflow(complaint) {
 
     // Final return object
     const result = {
-      verified: verificationState.complaintStatus === 'verified',
+      verified: verificationState.complaintStatus === "verified",
       data: {
         imageCheck: verificationState.imageCheck,
         geoCheck: verificationState.geoCheck,
         textCheck: verificationState.textCheck,
         severity: verificationState.finalSeverity,
-        carbonCreditsEarned : verificationState.carbonCreditsEarned * 0.01,
+        carbonCreditsEarned: verificationState.carbonCreditsEarned * 0.01,
         confidenceScore: verificationState.imageConfidence || 0,
         verificationSummary: summary,
         fullAnalysis: {
           imageAnalysis: verificationState.imageAnalysis,
           geoValidation: verificationState.geoValidation,
           textAnalysis: verificationState.textAnalysis,
-          finalVerification: verificationState.finalVerification
-        }
-      }
+          finalVerification: verificationState.finalVerification,
+        },
+      },
     };
 
     console.log("=== Final Verification Result ===");
@@ -65,8 +71,8 @@ export async function runVerificationWorkflow(complaint) {
         textCheck: false,
         severity: "low",
         confidenceScore: 0,
-        error: error.message
-      }
+        error: error.message,
+      },
     };
 
     console.log("Returning fallback result:", fallback);
