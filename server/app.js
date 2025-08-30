@@ -16,6 +16,8 @@ import chatRoute from "./Router/chatRouter.js"
 import dotenv from 'dotenv';
 dotenv.config();
 
+import complaintRoutes from './Router/complaint.js'
+import './cron/verifyComplaints.js' // Import cron job
 // Display startup banner
 displayStartupMessage();
 
@@ -127,6 +129,7 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/complaints', complaintRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
