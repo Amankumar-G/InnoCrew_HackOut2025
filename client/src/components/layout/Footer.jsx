@@ -23,7 +23,7 @@ const Footer = () => {
                 <FaTree className="text-white w-4 h-4" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                Community Mangrove Watch
+                MARC
               </span>
             </div>
             <p
