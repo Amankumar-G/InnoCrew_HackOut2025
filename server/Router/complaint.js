@@ -22,7 +22,7 @@ router.post(
 
       // Include user ID from authenticated JWT
       const complaint = new Complaint({
-        user: req.user._id, // <-- store the user ID
+        user: req.user._id,
         description,
         category,
         location: JSON.parse(location),

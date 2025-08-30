@@ -15,12 +15,21 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'odoo', 
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], 
-    transformation: [{ width: 500, height: 500, crop: 'limit' }]
+    folder: 'odoo',
+    resource_type: 'auto', // Allows any file type
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'doc', 'docx']
   }
 });
 
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    console.log('File being processed:', file);
+    cb(null, true);
+  }
+});
 
 export default upload;

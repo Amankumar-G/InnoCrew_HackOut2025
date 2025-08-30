@@ -6,7 +6,7 @@ import { runVerificationWorkflow } from "../services/aiVerification.js";
 
 // Run every 10 seconds for testing → "*/10 * * * * *"
 const cronJob = cron.schedule(
-  "*/10 * * * * *",
+  "*/30 * * * *",
   async () => {
     console.log("\n🔍 [CRON START] Checking for unverified complaints...");
 

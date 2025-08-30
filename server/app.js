@@ -12,12 +12,14 @@ import passportConfig from './config/passport.js';
 import { initializeSocket, io } from './config/socket.js';
 import authRoutes from './Router/auth.js'
 import chatRoute from "./Router/chatRouter.js"
+import plantationRoutes from "./Router/plantationRoutes.js"
 import leaderBoard from "./Router/leaderRouter.js"
 
 import dotenv from 'dotenv';
 dotenv.config();
 
 import complaintRoutes from './Router/complaint.js'
+import './cron/verifyPlantations.js';
 import './cron/verifyComplaints.js' // Import cron job
 // Display startup banner
 displayStartupMessage();
@@ -85,8 +87,7 @@ app.use((req, res, next) => {
 });
 
 
-app.use("/api/chat", chatRoute);
-app.use("/api/leaderboard",leaderBoard);
+
 
 // Route to Emit a Socket Event
 app.post('/api/notify', (req, res) => {
@@ -130,8 +131,11 @@ app.get('/api', (req, res) => {
   res.send("🚀 Server is live!");
 });
 
+app.use("/api/chat", chatRoute);
+app.use("/api/leaderboard",leaderBoard);
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/plantation', plantationRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
