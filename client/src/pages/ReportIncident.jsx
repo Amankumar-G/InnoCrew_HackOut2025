@@ -18,6 +18,9 @@ import {
   FaFire,
 } from "react-icons/fa";
 
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+
 export default function ReportIncident() {
   const [formData, setFormData] = useState({
     description: "",
@@ -28,10 +31,15 @@ export default function ReportIncident() {
     media: [],
   });
 
-  const [locationStatus, setLocationStatus] = useState("idle"); // idle, loading, success, error
+  const [locationStatus, setLocationStatus] = useState("idle");
   const [mediaFiles, setMediaFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+
+  // Fix: Properly destructure the auth context
+  const { user, token } = useAuth(); // or however your auth context is structured
+  // Alternative if useAuth returns user directly:
+  // const user = useAuth();
 
   const categories = [
     {
@@ -80,7 +88,6 @@ export default function ReportIncident() {
     { value: "large", label: "Large Impact", color: "bg-red-100 text-red-800" },
   ];
 
-  // Get user's current location
   const getCurrentLocation = () => {
     setLocationStatus("loading");
 
@@ -112,7 +119,6 @@ export default function ReportIncident() {
     );
   };
 
-  // Handle file upload
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
     const newMedia = [];
@@ -133,7 +139,6 @@ export default function ReportIncident() {
     }));
   };
 
-  // Remove media file
   const removeMedia = (index) => {
     const updatedMedia = mediaFiles.filter((_, i) => i !== index);
     setMediaFiles(updatedMedia);
@@ -143,19 +148,56 @@ export default function ReportIncident() {
     }));
   };
 
-  // Handle form submission
+  // Fixed submit function with better error handling and debugging
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitStatus(null);
+    console.log("from handle submit");
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Form submitted:", formData);
-      setIsSubmitting(false);
-      setSubmitStatus("success");
+    try {
+      // Debug: Log the environment variable
+      console.log("API URL:", import.meta.env.VITE_URL);
 
-      // Reset form after success
-      setTimeout(() => {
+      // Debug: Log the token
+      console.log("User token:", token || user?.token);
+
+      const fd = new FormData();
+      fd.append("description", formData.description);
+      fd.append("category", formData.category);
+      fd.append("location", JSON.stringify(formData.location));
+      fd.append("damageEstimate", formData.damageEstimate);
+      fd.append("landmark", formData.landmark);
+
+      mediaFiles.forEach((media) => {
+        fd.append("media", media.file);
+      });
+
+      // Debug: Log FormData contents
+      console.log("FormData being sent:");
+      for (let [key, value] of fd.entries()) {
+        console.log(key, value);
+      }
+
+      const apiUrl = `${import.meta.env.VITE_URL}/api/complaints`;
+      console.log("Making request to:", apiUrl);
+
+      const res = await axios.post(apiUrl, fd, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token || user?.token}`, // Fix: Handle both cases
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // This console.log should now work
+      console.log("Success response:", res);
+      console.log("Response data:", res.data);
+      console.log("Response status:", res.status);
+
+      if (res.status === 200 || res.status === 201) {
+        setSubmitStatus("success");
+        // Reset form
         setFormData({
           description: "",
           category: "",
@@ -166,9 +208,28 @@ export default function ReportIncident() {
         });
         setMediaFiles([]);
         setLocationStatus("idle");
-        setSubmitStatus(null);
-      }, 3000);
-    }, 2000);
+      } else {
+        console.log("Unexpected status code:", res.status);
+        setSubmitStatus("error");
+      }
+    } catch (err) {
+      console.error("Error submitting report:", err);
+
+      // More detailed error logging
+      if (err.response) {
+        console.error("Error response data:", err.response.data);
+        console.error("Error response status:", err.response.status);
+        console.error("Error response headers:", err.response.headers);
+      } else if (err.request) {
+        console.error("Error request:", err.request);
+      } else {
+        console.error("Error message:", err.message);
+      }
+
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid =
@@ -207,6 +268,24 @@ export default function ReportIncident() {
               <p className="text-green-700">
                 Thank you for helping protect our mangroves. We'll investigate
                 this incident promptly.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {submitStatus === "error" && (
+          <div className="bg-red-50 border-2 border-red-300 rounded-xl p-6 mb-8 flex items-center space-x-4">
+            <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+              <FaExclamationTriangle className="text-white text-xl" />
+            </div>
+            <div>
+              <h3 className="text-red-800 font-bold text-lg">
+                Error Submitting Report
+              </h3>
+              <p className="text-red-700">
+                There was an error submitting your report. Please check the
+                console for details and try again.
               </p>
             </div>
           </div>
@@ -459,6 +538,7 @@ export default function ReportIncident() {
               </button>
             </div>
 
+            {/* Progress Section */}
             <div className="bg-gray-50 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Report Progress
