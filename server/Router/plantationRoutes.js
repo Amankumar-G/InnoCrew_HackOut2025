@@ -129,8 +129,12 @@ router.get(
 
       // Get all plantations with project owner populated
       const plantations = await Plantation.find()
-        .populate("projectOwnerId", "name email role") // only show limited user fields
-        .sort({ createdAt: -1 }); // latest first
+      .populate("projectOwnerId", "name email role")
+      .select(
+        "plantationName location area species plantingDate survivalRate status images soilCertificate plantCertificate additionalDocs carbonCreditGenerated marketplaceStatus createdAt"
+      )
+      .sort({ createdAt: -1 });
+    
 
       return res.json({
         count: plantations.length,
@@ -237,6 +241,8 @@ router.put(
     try {
       const { id } = req.params;
       const { status, adminComment } = req.body;
+
+      // Fetch user role
       const userData = await User.findById(req.user._id).select(
         "-password -__v -createdAt -updatedAt"
       );
@@ -244,18 +250,13 @@ router.put(
       if (!userData || userData.role !== "admin") {
         return res.status(403).json({ error: "Not authorized" });
       }
-      // Allowed status values from schema
-      const allowedStatuses = [
-        "pending_verification",
-        "verified_by_ai",
-        "approved_by_admin",
-        "rejected",
-        "under_review",
-        "admin_verification_needed",
-      ];
 
+      // Allowed input from admin
+      const allowedStatuses = ["approved", "rejected"];
       if (!allowedStatuses.includes(status)) {
-        return res.status(400).json({ error: "Invalid status value" });
+        return res
+          .status(400)
+          .json({ error: "Admin can only approve or reject plantations" });
       }
 
       const plantation = await Plantation.findById(id);
@@ -263,20 +264,35 @@ router.put(
         return res.status(404).json({ error: "Plantation not found" });
       }
 
-      plantation.status = status;
-      plantation.adminId = req.user._id;
-      if (adminComment) plantation.adminComment = adminComment;
+      // Prevent update if plantation is under_review
+      if (plantation.status === "under_review") {
+        return res.status(400).json({
+          error:
+            "Cannot update plantation status while it is in under_review state",
+        });
+      }
 
-      if (status === "approved_by_admin") {
+      // Map simple admin status → schema status
+      let newStatus;
+      if (status === "approved") {
+        newStatus = "approved_by_admin";
+        plantation.marketplaceStatus = "listed"; // ✅ auto-list marketplace
         plantation.adminApproved = true;
       } else if (status === "rejected") {
+        newStatus = "rejected";
+        plantation.marketplaceStatus = "not_listed"; // ✅ ensure stays hidden
         plantation.adminApproved = false;
       }
+
+      // Update
+      plantation.status = newStatus;
+      plantation.adminId = req.user._id;
+      if (adminComment) plantation.adminComment = adminComment;
 
       await plantation.save();
 
       return res.json({
-        message: "Plantation status updated successfully",
+        message: `Plantation ${status} successfully`,
         plantation,
       });
     } catch (error) {
