@@ -1,6 +1,6 @@
 // cron/verifyComplaints.js
 import cron from "node-cron";
-import Complaint from "../Schema/Complaint.js"; 
+import Complaint from "../Schema/Complaint.js";
 import User from "../Schema/User.js";
 import { runVerificationWorkflow } from "../services/aiVerification.js";
 
@@ -11,7 +11,9 @@ const cronJob = cron.schedule(
     console.log("\n🔍 [CRON START] Checking for unverified complaints...");
 
     try {
-      const complaints = await Complaint.find({ status: "pending_verification" }).limit(10);
+      const complaints = await Complaint.find({
+        status: "pending_verification",
+      }).limit(10);
 
       if (complaints.length === 0) {
         console.log("📭 No pending complaints found");
@@ -42,33 +44,67 @@ const cronJob = cron.schedule(
             geoCheck: verificationResult.data?.geoCheck || false,
             textCheck: verificationResult.data?.textCheck || false,
             severity: verificationResult.data?.severity || "low",
-            carbonCreditsEarned: verificationResult.data?.carbonCreditsEarned || 0,
+            carbonCreditsEarned:
+              verificationResult.data?.carbonCreditsEarned || 0,
             confidenceScore: verificationResult.data?.confidenceScore || 0,
-            verificationSummary: verificationResult.data?.verificationSummary || {},
-            fullAnalysis: verificationResult.data?.fullAnalysis || {}
+            verificationSummary:
+              verificationResult.data?.verificationSummary || {},
+            fullAnalysis: verificationResult.data?.fullAnalysis || {},
           };
 
           // Step 4: Update complaint with verification results
-          complaint.status = verificationData.verified ? "verified" : "rejected";
+          complaint.status = verificationData.verified
+            ? "verified"
+            : "rejected";
           complaint.verification = verificationData;
           await complaint.save();
 
-          console.log(`✅ Complaint ${complaint._id} updated → Status: ${complaint.status}`);
+          console.log(
+            `✅ Complaint ${complaint._id} updated → Status: ${complaint.status}`
+          );
 
-          // Step 5: Add carbon credits to user if verified
+          // Step 5: Add carbon credits + gamification points to user if verified
           if (verificationData.verified && complaint.user) {
             const user = await User.findById(complaint.user);
             if (user) {
+              // 🌱 Carbon credits
               user.carbonCredits.earned += verificationData.carbonCreditsEarned;
+
+              // 🎯 Points logic based on severity
+              let pointsToAdd = 0;
+              switch (verificationData.severity) {
+                case "low":
+                  pointsToAdd = 10;
+                  break;
+                case "medium":
+                  pointsToAdd = 20;
+                  break;
+                case "high":
+                  pointsToAdd = 30;
+                  break;
+                default:
+                  pointsToAdd = 5; // fallback if severity is missing
+              }
+
+              user.points += pointsToAdd;
+
               await user.save();
-              console.log(`🌱 User ${user._id} credited with ${verificationData.carbonCreditsEarned} carbon credits`);
+
+              console.log(
+                `🌱 User ${user._id} credited with ${verificationData.carbonCreditsEarned} carbon credits`
+              );
+              console.log(
+                `🎯 User ${user._id} awarded ${pointsToAdd} points (severity: ${verificationData.severity})`
+              );
             } else {
               console.warn(`⚠️ User not found for complaint ${complaint._id}`);
             }
           }
-
         } catch (complaintError) {
-          console.error(`❌ Error processing complaint ${complaint._id}:`, complaintError.message);
+          console.error(
+            `❌ Error processing complaint ${complaint._id}:`,
+            complaintError.message
+          );
 
           console.log("↩️ Resetting status back to pending_verification...");
           try {
@@ -76,7 +112,10 @@ const cronJob = cron.schedule(
             await complaint.save();
             console.log("✅ Reset successful");
           } catch (resetError) {
-            console.error(`❌ Failed to reset complaint ${complaint._id} status:`, resetError.message);
+            console.error(
+              `❌ Failed to reset complaint ${complaint._id} status:`,
+              resetError.message
+            );
           }
         }
       }
@@ -94,7 +133,9 @@ const cronJob = cron.schedule(
 
 // Start the cron job
 cronJob.start();
-console.log("🚀 Complaint verification cron job started (runs every 10 seconds)");
+console.log(
+  "🚀 Complaint verification cron job started (runs every 10 seconds)"
+);
 
 // Graceful shutdown
 process.on("SIGTERM", () => {

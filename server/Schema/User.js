@@ -15,7 +15,11 @@ const UserSchema = new mongoose.Schema({
 
   // Gamification
   points: { type: Number, default: 0 },
-  badges: [{ type: String }],
+  
+  summary : {
+    type : String,
+    default : "No Summary Available"
+  },
 
   // Carbon credit accounting
   carbonCredits: {
