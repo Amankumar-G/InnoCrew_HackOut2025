@@ -5,20 +5,20 @@ const API_BASE_URL = `/api`;
 // Helper function to get auth headers
 const getAuthHeaders = (token) => {
   const headers = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
-  
+
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
-  
+
   return headers;
 };
 
 // Generic API call function
 const apiCall = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const config = {
     headers: getAuthHeaders(options.token),
     ...options,
@@ -44,32 +44,32 @@ const apiCall = async (endpoint, options = {}) => {
 export const authAPI = {
   // Register new user
   register: async (userData) => {
-    return apiCall('/auth/register', {
-      method: 'POST',
+    return apiCall("/auth/register", {
+      method: "POST",
       body: JSON.stringify(userData),
     });
   },
 
   // Login user
   login: async (credentials) => {
-    return apiCall('/auth/login', {
-      method: 'POST',
+    return apiCall("/auth/login", {
+      method: "POST",
       body: JSON.stringify(credentials),
     });
   },
 
   // Get user profile
   getProfile: async (token) => {
-    return apiCall('/auth/profile', {
-      method: 'GET',
+    return apiCall("/auth/profile", {
+      method: "GET",
       token,
     });
   },
 
   // Update user profile
   updateProfile: async (userData, token) => {
-    return apiCall('/auth/profile', {
-      method: 'PUT',
+    return apiCall("/auth/profile", {
+      method: "PUT",
       body: JSON.stringify(userData),
       token,
     });
@@ -77,8 +77,8 @@ export const authAPI = {
 
   // Initialize admin (for development)
   initAdmin: async () => {
-    return apiCall('/auth/init-admin', {
-      method: 'GET',
+    return apiCall("/auth/init-admin", {
+      method: "GET",
     });
   },
 };
@@ -88,10 +88,10 @@ export const plantationAPI = {
   // Submit new plantation
   submitPlantation: async (formData, token) => {
     const url = `${API_BASE_URL}/plantation`;
-    
+
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -101,20 +101,22 @@ export const plantationAPI = {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || `HTTP error! status: ${response.status}`);
+        throw new Error(
+          result.message || `HTTP error! status: ${response.status}`
+        );
       }
 
       return { success: true, data: result };
     } catch (error) {
-      console.error('Plantation submission failed:', error);
+      console.error("Plantation submission failed:", error);
       return { success: false, error: error.message };
     }
   },
 
   // Get user's plantations
   getUserPlantations: async (token) => {
-    return apiCall('/plantation/user', {
-      method: 'GET',
+    return apiCall("/plantation/user", {
+      method: "GET",
       token,
     });
   },
@@ -122,7 +124,7 @@ export const plantationAPI = {
   // Get plantation by ID
   getPlantationById: async (id, token) => {
     return apiCall(`/plantation/${id}`, {
-      method: 'GET',
+      method: "GET",
       token,
     });
   },
@@ -130,7 +132,7 @@ export const plantationAPI = {
   // Update plantation
   updatePlantation: async (id, plantationData, token) => {
     return apiCall(`/plantation/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(plantationData),
       token,
     });
@@ -139,7 +141,7 @@ export const plantationAPI = {
   // Delete plantation
   deletePlantation: async (id, token) => {
     return apiCall(`/plantation/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       token,
     });
   },
@@ -149,24 +151,24 @@ export const plantationAPI = {
 export const userAPI = {
   // Get user stats
   getStats: async (token) => {
-    return apiCall('/user/stats', {
-      method: 'GET',
+    return apiCall("/user/stats", {
+      method: "GET",
       token,
     });
   },
 
   // Get user complaints/reports
   getComplaints: async (token) => {
-    return apiCall('/user/complaints', {
-      method: 'GET',
+    return apiCall("/user/complaints", {
+      method: "GET",
       token,
     });
   },
 
   // Submit new complaint/report
   submitComplaint: async (complaintData, token) => {
-    return apiCall('/user/complaints', {
-      method: 'POST',
+    return apiCall("/user/complaints", {
+      method: "POST",
       body: JSON.stringify(complaintData),
       token,
     });
@@ -177,8 +179,8 @@ export const userAPI = {
 export const marketplaceAPI = {
   // Get marketplace plantations
   getMarketplacePlantations: async (token) => {
-    return apiCall('/marketplace', {
-      method: 'GET'
+    return apiCall("/marketplace", {
+      method: "GET",
     });
   },
 };

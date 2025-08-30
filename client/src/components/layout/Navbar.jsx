@@ -28,10 +28,10 @@ const Navbar = () => {
   // Base navigation items
   const baseNavigation = [
     { name: "Report Incident", href: "/reportIncident", icon: FaMapMarkedAlt },
-    { name: "Restoration", href: "/restoration", icon: FaTree },
-    { name: "Carbon Credits", href: "/carbon-credits", icon: FaLeaf },
+    { name: "Marketplace", href: "/restoration", icon: FaTree },
+    { name: "Carbon plantation", href: "/carbon-credits", icon: FaLeaf },
     { name: "Leaderboard", href: "/leaderboard", icon: FaMedal },
-    { name: "PDF Chat", href: "/pdfChat", icon: FaFilePdf },
+    // { name: "PDF Chat", href: "/pdfChat", icon: FaFilePdf },
   ];
 
   // Get the appropriate profile path based on user role

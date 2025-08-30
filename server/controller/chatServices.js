@@ -2,7 +2,7 @@ import { OpenAIEmbeddings } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import dotenv from "dotenv";
 import { OpenAI } from "openai";
-import User from "../Schema/User.js"; 
+import User from "../Schema/User.js";
 
 dotenv.config();
 
@@ -12,7 +12,7 @@ export const chat = async (req, res) => {
   try {
     const { userQuery } = req.body;
 
-    // ✅ 1. Fetch full user data (not just summary)
+    // ✅ 1. Fetch user data
     const userData = await User.findById(req.user._id).select(
       "-password -__v -createdAt -updatedAt"
     );
@@ -21,7 +21,7 @@ export const chat = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const userSummary = userData?.summary || "No summary available";
+    const userSummary = userData?.summary;
 
     // ✅ 2. Setup embeddings & Qdrant
     const embeddings = new OpenAIEmbeddings({
@@ -40,22 +40,22 @@ export const chat = async (req, res) => {
     const retriever = vectorStore.asRetriever({ k: 3 });
     const vectorResults = await retriever.invoke(userQuery);
 
-    // ✅ 3. Build system prompt
+    console.log("📌 Retrieved Context:", vectorResults);
+
+    // ✅ 3. Build strong restrictive system prompt
     const SYSTEM_PROMPT = `
-      You are a helpful AI Assistant.
-      Use both **User Profile** and **Context (from PDFs / user Qdrant data)** 
-      to answer queries accurately.
-
-      User Profile:
-      Name: ${userData?.name || "Unknown"}
-      Email: ${userData?.email || "Unknown"}
-      Summary: ${userSummary}
-
-      Retrieved Context:
-      ${JSON.stringify(vectorResults, null, 2)}
+      You are helpful AI assistant.
+        Always answer based on the provided **User Summary** and **PDF Context** provided below. 
+      - If the context is empty do not reply."
+      - Do NOT use any prior knowledge.
+      - Do NOT guess or make up information.
+      - ONLY rely on the **User Summary** and **PDF Context**.
+      User Summary: ${userSummary} 
+      PDF Context: ${JSON.stringify(vectorResults)}
+  
     `;
 
-    // ✅ 4. Generate AI response
+    // ✅ 4. Get AI response
     const chatResult = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -67,8 +67,6 @@ export const chat = async (req, res) => {
     return res.json({
       message: chatResult.choices[0].message.content,
       docs: vectorResults,
-      userSummary,
-      userProfile: userData, // include user info for frontend if needed
     });
 
   } catch (error) {
@@ -76,3 +74,5 @@ export const chat = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+
