@@ -2,7 +2,7 @@ import express from "express";
 import passport from "passport";
 import Plantation from "../Schema/Plantation.js";
 import upload from "../config/multer.js";
-import User from "../Schema/User.js"
+import User from "../Schema/User.js";
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ router.post(
     { name: "images", maxCount: 10 },
     { name: "soilCertificate", maxCount: 1 },
     { name: "plantCertificate", maxCount: 1 },
-    { name: "additionalDocs", maxCount: 5 }
+    { name: "additionalDocs", maxCount: 5 },
   ]),
   async (req, res) => {
     try {
@@ -28,34 +28,42 @@ router.post(
         area,
         species,
         plantingDate,
-        survivalRate
+        survivalRate,
       } = req.body;
 
       const projectOwnerId = req.user._id;
 
       // Debug file processing
       console.log("Processing files...");
-      
+
       // Map uploaded files to URLs with better error handling
-      const images = req.files["images"]?.map(file => {
-        console.log("Image file:", file);
-        return file.path || file.url || file.secure_url;
-      }).filter(Boolean) || [];
+      const images =
+        req.files["images"]
+          ?.map((file) => {
+            console.log("Image file:", file);
+            return file.path || file.url || file.secure_url;
+          })
+          .filter(Boolean) || [];
 
-      const soilCertificate = req.files["soilCertificate"]?.[0] ? 
-        (req.files["soilCertificate"][0].path || 
-         req.files["soilCertificate"][0].url || 
-         req.files["soilCertificate"][0].secure_url) : "";
+      const soilCertificate = req.files["soilCertificate"]?.[0]
+        ? req.files["soilCertificate"][0].path ||
+          req.files["soilCertificate"][0].url ||
+          req.files["soilCertificate"][0].secure_url
+        : "";
 
-      const plantCertificate = req.files["plantCertificate"]?.[0] ? 
-        (req.files["plantCertificate"][0].path || 
-         req.files["plantCertificate"][0].url || 
-         req.files["plantCertificate"][0].secure_url) : "";
+      const plantCertificate = req.files["plantCertificate"]?.[0]
+        ? req.files["plantCertificate"][0].path ||
+          req.files["plantCertificate"][0].url ||
+          req.files["plantCertificate"][0].secure_url
+        : "";
 
-      const additionalDocs = req.files["additionalDocs"]?.map(file => {
-        console.log("Additional doc file:", file);
-        return file.path || file.url || file.secure_url;
-      }).filter(Boolean) || [];
+      const additionalDocs =
+        req.files["additionalDocs"]
+          ?.map((file) => {
+            console.log("Additional doc file:", file);
+            return file.path || file.url || file.secure_url;
+          })
+          .filter(Boolean) || [];
 
       console.log("Processed file URLs:");
       console.log("Images:", images);
@@ -66,22 +74,25 @@ router.post(
       const plantationData = {
         projectOwnerId,
         plantationName,
-        location: { 
-          latitude: parseFloat(latitude), 
-          longitude: parseFloat(longitude), 
-          address 
+        location: {
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+          address,
         },
         area: parseFloat(area),
-        species: typeof species === "string" ? 
-          species.split(",").map(s => s.trim()) : 
-          (Array.isArray(species) ? species : [species]),
+        species:
+          typeof species === "string"
+            ? species.split(",").map((s) => s.trim())
+            : Array.isArray(species)
+            ? species
+            : [species],
         plantingDate: new Date(plantingDate),
         survivalRate: parseFloat(survivalRate),
         images,
         soilCertificate,
         plantCertificate,
         additionalDocs,
-        status: "pending_verification"
+        status: "pending_verification",
       };
 
       console.log("Final plantation data:", plantationData);
@@ -92,21 +103,21 @@ router.post(
       res.status(201).json({
         success: true,
         message: "Plantation submitted successfully!",
-        data: savedPlantation
+        data: savedPlantation,
       });
     } catch (error) {
       console.error("Error details:", error);
       console.error("Request files:", req.files);
       console.error("Request body:", req.body);
-      
-      res.status(500).json({ 
-        success: false, 
-        message: "Server error", 
+
+      res.status(500).json({
+        success: false,
+        message: "Server error",
         error: error.message,
         debug: {
           filesReceived: req.files ? Object.keys(req.files) : [],
-          bodyKeys: Object.keys(req.body || {})
-        }
+          bodyKeys: Object.keys(req.body || {}),
+        },
       });
     }
   }
@@ -129,12 +140,11 @@ router.get(
 
       // Get all plantations with project owner populated
       const plantations = await Plantation.find()
-      .populate("projectOwnerId", "name email role")
-      .select(
-        "plantationName location area species plantingDate survivalRate status images soilCertificate plantCertificate additionalDocs carbonCreditGenerated marketplaceStatus createdAt"
-      )
-      .sort({ createdAt: -1 });
-    
+        .populate("projectOwnerId", "name email role")
+        .select(
+          "plantationName location area species plantingDate survivalRate status images soilCertificate plantCertificate additionalDocs carbonCreditGenerated marketplaceStatus createdAt"
+        )
+        .sort({ createdAt: -1 });
 
       return res.json({
         count: plantations.length,
@@ -153,8 +163,9 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     try {
-      const plantations = await Plantation.find({ projectOwnerId: req.user._id })
-        .sort({ createdAt: -1 }); // latest first
+      const plantations = await Plantation.find({
+        projectOwnerId: req.user._id,
+      }).sort({ createdAt: -1 }); // latest first
 
       return res.json({
         count: plantations.length,
@@ -173,15 +184,20 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     try {
-      const plantation = await Plantation.findById(req.params.id)
-        .populate("projectOwnerId", "name email role");
+      const plantation = await Plantation.findById(req.params.id).populate(
+        "projectOwnerId",
+        "name email role"
+      );
 
       if (!plantation) {
         return res.status(404).json({ error: "Plantation not found" });
       }
 
       // Check if user owns the plantation or is admin
-      if (plantation.projectOwnerId._id.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+      if (
+        plantation.projectOwnerId._id.toString() !== req.user._id.toString() &&
+        req.user.role !== "admin"
+      ) {
         return res.status(403).json({ error: "Not authorized" });
       }
 
@@ -207,13 +223,23 @@ router.put(
       }
 
       // Check if user owns the plantation or is admin
-      if (plantation.projectOwnerId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+      if (
+        plantation.projectOwnerId.toString() !== req.user._id.toString() &&
+        req.user.role !== "admin"
+      ) {
         return res.status(403).json({ error: "Not authorized" });
       }
 
       // Only allow updates if plantation is still pending verification
-      if (plantation.status !== "pending_verification" && req.user.role !== "admin") {
-        return res.status(400).json({ error: "Cannot update plantation after verification has started" });
+      if (
+        plantation.status !== "pending_verification" &&
+        req.user.role !== "admin"
+      ) {
+        return res
+          .status(400)
+          .json({
+            error: "Cannot update plantation after verification has started",
+          });
       }
 
       const updatedPlantation = await Plantation.findByIdAndUpdate(
@@ -252,7 +278,7 @@ router.put(
       }
 
       // Allowed input from admin
-      const allowedStatuses = ["approved", "rejected"];
+      const allowedStatuses = ["approved_by_admin", "rejected"];
       if (!allowedStatuses.includes(status)) {
         return res
           .status(400)
@@ -274,7 +300,7 @@ router.put(
 
       // Map simple admin status → schema status
       let newStatus;
-      if (status === "approved") {
+      if (status === "approved_by_admin") {
         newStatus = "approved_by_admin";
         plantation.marketplaceStatus = "listed"; // ✅ auto-list marketplace
         plantation.adminApproved = true;
@@ -316,13 +342,23 @@ router.delete(
       }
 
       // Check if user owns the plantation or is admin
-      if (plantation.projectOwnerId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+      if (
+        plantation.projectOwnerId.toString() !== req.user._id.toString() &&
+        req.user.role !== "admin"
+      ) {
         return res.status(403).json({ error: "Not authorized" });
       }
 
       // Only allow deletion if plantation is still pending verification
-      if (plantation.status !== "pending_verification" && req.user.role !== "admin") {
-        return res.status(400).json({ error: "Cannot delete plantation after verification has started" });
+      if (
+        plantation.status !== "pending_verification" &&
+        req.user.role !== "admin"
+      ) {
+        return res
+          .status(400)
+          .json({
+            error: "Cannot delete plantation after verification has started",
+          });
       }
 
       await Plantation.findByIdAndDelete(id);

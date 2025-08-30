@@ -15,7 +15,7 @@ const AdminProfile = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Toggle between complaints and project owners
-  const [viewMode, setViewMode] = useState("complaints");
+  const [viewMode, setViewMode] = useState("projects");
 
   // Admin data
   const [adminData, setAdminData] = useState({
@@ -131,10 +131,7 @@ const AdminProfile = () => {
                 onComplaintClick={handleComplaintClick}
               />
             ) : (
-              <AdminProjectsSection
-                projectOwners={projectOwners}
-                theme={theme}
-              />
+              <AdminProjectsSection theme={theme} token={token} />
             )}
           </div>
         </div>
