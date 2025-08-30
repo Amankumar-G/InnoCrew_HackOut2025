@@ -98,34 +98,35 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
 // ================== PROFILE ==================
 router.get(
   "/profile",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     try {
-      let user = await User.findById(req.user._id).select(
-        "-password -__v -createdAt -updatedAt"
-      );
-
-      console.log("user",user);
-        let complaints;
-      
-          if (user.role === "admin") {
-            // admin => get all complaints
-            complaints = await Complaint.find().sort({ createdAt: -1 });
-          } else {
-            // normal user => get only their complaints
-            complaints = await Complaint.find({ user: req.user._id }).sort({ createdAt: -1 });
-          }
-       user = {...user,"complaints":complaints}  
-       console.log(user);
+      // Get user details (excluding sensitive fields)
+      let user = await User.findById(req.user._id)
+        .select("-password -__v -createdAt -updatedAt")
+        .lean(); // converts mongoose doc to plain object
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Fetch complaints based on role
+      let complaints;
+      if (user.role === "admin") {
+        complaints = await Complaint.find().sort({ createdAt: -1 }).lean();
+      } else {
+        complaints = await Complaint.find({ user: req.user._id })
+          .sort({ createdAt: -1 })
+          .lean();
+      }
+
+      // Attach complaints to user object
+      user.complaints = complaints;
+
+      // Send response
       res.json(user);
     } catch (error) {
       console.error("Profile error:", error);
@@ -133,6 +134,43 @@ router.get(
     }
   }
 );
+
+
+
+// // ================== PROFILE ==================
+// router.get(
+//   "/profile",
+//   passport.authenticate("jwt", { session: false }),
+//   async (req, res) => {
+//     try {
+//       let user = await User.findById(req.user._id).select(
+//         "-password -__v -createdAt -updatedAt"
+//       );
+
+//       console.log("user",user);
+//         let complaints;
+      
+//           if (user.role === "admin") {
+//             // admin => get all complaints
+//             complaints = await Complaint.find().sort({ createdAt: -1 });
+//           } else {
+//             // normal user => get only their complaints
+//             complaints = await Complaint.find({ user: req.user._id }).sort({ createdAt: -1 });
+//           }
+//        user = {...user,"complaints":complaints}  
+//        console.log(user);
+
+//       if (!user) {
+//         return res.status(404).json({ message: "User not found" });
+//       }
+
+//       res.json(user);
+//     } catch (error) {
+//       console.error("Profile error:", error);
+//       res.status(500).json({ error: "Failed to fetch profile" });
+//     }
+//   }
+// );
 
 // ================== INIT ADMIN ==================
 router.get("/init-admin", async (req, res) => {
