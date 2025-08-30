@@ -2,6 +2,7 @@ import express from "express";
 import passport from "passport";
 import Plantation from "../Schema/Plantation.js";
 import upload from "../config/multer.js";
+import User from "../Schema/User.js"
 
 const router = express.Router();
 
@@ -107,6 +108,97 @@ router.post(
           bodyKeys: Object.keys(req.body || {})
         }
       });
+    }
+  }
+);
+
+router.get(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      // fetch user data to check role
+      const userData = await User.findById(req.user._id).select(
+        "-password -__v -createdAt -updatedAt"
+      );
+
+      if (!userData || userData.role !== "admin") {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      // Get all plantations with project owner populated
+      const plantations = await Plantation.find()
+        .populate("projectOwnerId", "name email role") // only show limited user fields
+        .sort({ createdAt: -1 }); // latest first
+
+      return res.json({
+        count: plantations.length,
+        plantations,
+      });
+    } catch (error) {
+      console.error("Error fetching plantations for admin:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+
+router.put(
+  "/:id/status",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, adminComment } = req.body;
+      const userData = await User.findById(req.user._id).select(
+        "-password -__v -createdAt -updatedAt"
+      );
+
+      if (!userData || userData.role !== "admin") {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      // Allowed status values from schema
+      const allowedStatuses = [
+        "pending_verification",
+        "verified_by_ai",
+        "approved_by_admin",
+        "rejected",
+        "under_review",
+        "admin_verification_needed",
+      ];
+
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({ error: "Invalid status value" });
+      }
+
+      const plantation = await Plantation.findById(id);
+      if (!plantation) {
+        return res.status(404).json({ error: "Plantation not found" });
+      }
+
+      // Only Admins should be allowed (example: role check)
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      plantation.status = status;
+      plantation.adminId = req.user._id;
+      if (adminComment) plantation.adminComment = adminComment;
+
+      if (status === "approved_by_admin") {
+        plantation.adminApproved = true;
+      } else if (status === "rejected") {
+        plantation.adminApproved = false;
+      }
+
+      await plantation.save();
+
+      return res.json({
+        message: "Plantation status updated successfully",
+        plantation,
+      });
+    } catch (error) {
+      console.error("Error updating plantation status:", error);
+      res.status(500).json({ error: "Server error" });
     }
   }
 );
