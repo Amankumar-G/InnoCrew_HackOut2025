@@ -186,7 +186,7 @@ export default function ReportIncident() {
         console.log(key, value);
       }
 
-      const apiUrl = `/api/complaints`;
+      const apiUrl = `${import.meta.env.VITE_URL}/api/complaints`;
       console.log("Making request to:", apiUrl);
 
       const res = await axios.post(apiUrl, fd, {

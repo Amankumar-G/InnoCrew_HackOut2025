@@ -1,6 +1,6 @@
 // API utility functions for centralized API calls
 
-const API_BASE_URL = `/api`;
+const API_BASE_URL = `${import.meta.env.VITE_URL}/api`;
 
 // Helper function to get auth headers
 const getAuthHeaders = (token) => {
