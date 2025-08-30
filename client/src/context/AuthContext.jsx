@@ -18,6 +18,8 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing token on app load
   useEffect(() => {
+    console.log(localStorage.getItem("authToken"))
+    console.log(localStorage.getItem("user"))
     const savedToken = localStorage.getItem("authToken");
     const savedUser = localStorage.getItem("user");
 
@@ -86,9 +88,11 @@ export const AuthProvider = ({ children }) => {
         setUser(result.data.user);
         setToken(result.data.token);
         
-        console.log(result.data)
+        // console.log(result.data)
         localStorage.setItem("authToken", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
+        console.log(localStorage.getItem("authToken"))
+        console.log(localStorage.getItem("user"))
 
         return { success: true, user: result.data.user };
       } else {

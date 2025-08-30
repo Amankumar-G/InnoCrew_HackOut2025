@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Upload, Check, Send } from "lucide-react";
 import axios from "axios";
 import { useAppContext } from "../context/AppContext"; // to get theme
+import { useAuth } from "../context/AuthContext";
 
 // Typing Animation Component
 const TypingAnimation = () => (
@@ -21,6 +22,7 @@ const Pdf = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
+  const user = useAuth()
 
   const handleFileUpload = (selectedFile) => {
     if (!selectedFile) return;
@@ -44,23 +46,22 @@ const Pdf = () => {
       .catch(() => setUploadProgress("Upload failed!"));
   };
 
-  const handleFileChange = (e) => handleFileUpload(e.target.files[0]);
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    handleFileUpload(e.dataTransfer.files[0]);
-  };
-
   const handleSend = () => {
     if (!question.trim()) return;
     setMessages((prev) => [...prev, { type: "user", text: question }]);
     setQuestion("");
     setIsTyping(true);
-
-    axios
-      .post("http://localhost:5000/chat", { userQuery: question })
+    axios.post(
+      "http://localhost:8000/api/chat",
+      { userQuery: question }, // request body
+      {
+        withCredentials: true, // <-- goes here
+        headers: {
+          Authorization: `Bearer ${user.token}`, // replace with actual token
+        },
+      }
+    )
+    
       .then((res) => {
         const botResponse = res.data.message || "No response";
         setMessages((prev) => [...prev, { type: "bot", text: botResponse }]);
@@ -68,9 +69,9 @@ const Pdf = () => {
       .finally(() => setIsTyping(false));
   };
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // useEffect(() => {
+  //   chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]);
 
   return (
     <div
@@ -78,68 +79,9 @@ const Pdf = () => {
         theme === "dark" ? "bg-gray-900" : "bg-gray-50"
       }`}
     >
-      {/* Upload Section */}
-      <div className="w-[25%] flex flex-col gap-6">
-        <div
-          className={`border-2 border-dashed rounded-2xl h-[70vh] flex flex-col items-center justify-center p-6 transition-all cursor-pointer ${
-            theme === "dark"
-              ? "bg-gray-800/60 border-gray-700 hover:bg-gray-700/60"
-              : "bg-white/80 border-gray-300 hover:bg-gray-100"
-          } ${isDragging ? "ring-2 ring-emerald-500" : ""}`}
-          onDrop={handleDrop}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={() => setIsDragging(false)}
-        >
-          <label className="flex flex-col items-center justify-center w-full h-full">
-            <input
-              type="file"
-              accept=".pdf"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <div className="text-emerald-500">
-              {file ? <Check size={80} /> : <Upload size={80} />}
-            </div>
-            <p
-              className={`mt-3 text-lg font-medium ${
-                theme === "dark" ? "text-gray-200" : "text-gray-700"
-              }`}
-            >
-              {file ? "File Ready" : "Upload PDF"}
-            </p>
-          </label>
-
-          {/* Upload Progress */}
-          {uploadProgress && (
-            <div
-              className={`mt-6 text-sm px-4 py-2 rounded-lg ${
-                theme === "dark"
-                  ? "bg-gray-700 text-gray-200"
-                  : "bg-gray-100 text-gray-700"
-              }`}
-            >
-              {uploadProgress}
-            </div>
-          )}
-        </div>
-
-        {file && (
-          <div
-            className={`p-3 rounded-lg text-sm truncate ${
-              theme === "dark" ? "bg-gray-800 text-gray-200" : "bg-white shadow"
-            }`}
-          >
-            <span className="font-semibold">Selected File: </span>
-            {file.name}
-          </div>
-        )}
-      </div>
-
+     
       {/* Chat Section */}
-      <div className="w-[75%] flex flex-col">
+      <div className="ml-[15%] w-[75%] flex flex-col">
         <div
           className={`flex flex-col p-4 rounded-xl shadow-lg h-[70vh] overflow-y-auto space-y-3 mb-6 ${
             theme === "dark"

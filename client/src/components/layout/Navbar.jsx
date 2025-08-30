@@ -26,7 +26,7 @@ const Navbar = () => {
   const { isAuthenticated } = useAuth();
 
   const navigation = [
-    { name: "Report Incident", href: "/report", icon: FaMapMarkedAlt },
+    { name: "Report Incident", href: "/reportIncident", icon: FaMapMarkedAlt },
     { name: "Restoration", href: "/restoration", icon: FaTree },
     { name: "Carbon Credits", href: "/carbon-credits", icon: FaLeaf },
     { name: "Leaderboard", href: "/leaderboard", icon: FaMedal },
