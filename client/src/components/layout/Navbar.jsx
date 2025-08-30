@@ -31,7 +31,7 @@ const Navbar = () => {
     { name: "Marketplace", href: "/restoration", icon: FaTree },
     { name: "Carbon plantation", href: "/carbon-credits", icon: FaLeaf },
     { name: "Leaderboard", href: "/leaderboard", icon: FaMedal },
-    // { name: "PDF Chat", href: "/pdfChat", icon: FaFilePdf },
+    { name: "PDF Chat", href: "/pdfChat", icon: FaFilePdf },
   ];
 
   // Get the appropriate profile path based on user role
