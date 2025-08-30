@@ -112,35 +112,76 @@ router.post(
   }
 );
 
+// =========================
+// GET ALL PLANTATIONS
+// =========================
 router.get(
   "/",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     try {
-      // fetch user data to check role
       const userData = await User.findById(req.user._id).select(
         "-password -__v -createdAt -updatedAt"
       );
-
-      if (!userData || userData.role !== "admin") {
-        return res.status(403).json({ error: "Not authorized" });
+      console.log(userData)
+      if (!userData) {
+        return res.status(404).json({ error: "User not found" });
       }
 
-      // Get all plantations with project owner populated
-      const plantations = await Plantation.find()
-      .populate("projectOwnerId", "name email role")
-      .select(
-        "plantationName location area species plantingDate survivalRate status images soilCertificate plantCertificate additionalDocs carbonCreditGenerated marketplaceStatus createdAt"
-      )
-      .sort({ createdAt: -1 });
-    
+      let query = {};
+
+      // If not admin → filter only plantations owned by the user
+      if (userData.role !== "admin") {
+        query = { projectOwnerId: req.user._id };
+      }
+      console.log(query);
+      const plantations = await Plantation.find(query)
+        .populate("projectOwnerId", "name email role")
+        .select(
+          "plantationName location area species plantingDate survivalRate status images soilCertificate plantCertificate additionalDocs carbonCreditGenerated marketplaceStatus createdAt"
+        )
+        .sort({ createdAt: -1 });
 
       return res.json({
         count: plantations.length,
         plantations,
       });
     } catch (error) {
-      console.error("Error fetching plantations for admin:", error);
+      console.error("Error fetching plantations:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+
+// =========================
+// GET ONE PLANTATION BY ID
+// =========================
+router.get(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const plantation = await Plantation.findById(req.params.id)
+        .populate("projectOwnerId", "name email role")
+        .select(
+          "plantationName location area species plantingDate survivalRate status images soilCertificate plantCertificate additionalDocs carbonCreditGenerated marketplaceStatus createdAt verificationSummary"
+        );
+
+      if (!plantation) {
+        return res.status(404).json({ error: "Plantation not found" });
+      }
+
+      // Check if user is admin OR owner of the plantation
+      if (
+        req.user.role !== "admin" &&
+        plantation.projectOwnerId._id.toString() !== req.user._id.toString()
+      ) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      return res.json(plantation);
+    } catch (error) {
+      console.error("Error fetching plantation by ID:", error);
       res.status(500).json({ error: "Server error" });
     }
   }
