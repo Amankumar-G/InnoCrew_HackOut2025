@@ -120,18 +120,6 @@ const UserProfile = () => {
               <FaUser className="mr-3 h-4 w-4" />
               Profile
             </Link>
-
-            <button
-              onClick={() => setIsOpen(false)}
-              className={`w-full flex items-center px-4 py-2 text-sm transition-colors duration-200 ${
-                theme === "dark"
-                  ? "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <FaCog className="mr-3 h-4 w-4" />
-              Settings
-            </button>
           </div>
 
           {/* Logout */}
