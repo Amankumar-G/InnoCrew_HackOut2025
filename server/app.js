@@ -14,6 +14,8 @@ import { displayStartupMessage } from './config/start.js';
 import passportConfig from './config/passport.js';
 import { initializeSocket, io } from './config/socket.js';
 import authRoutes from './Router/auth.js'
+import complaintRoutes from './Router/complaint.js'
+import './cron/verifyComplaints.js' // Import cron job
 // Display startup banner
 displayStartupMessage();
 
@@ -122,6 +124,7 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/complaints', complaintRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
