@@ -13,7 +13,7 @@ import './config/mongodb.js';
 import { displayStartupMessage } from './config/start.js';
 import passportConfig from './config/passport.js';
 import { initializeSocket, io } from './config/socket.js';
-
+import authRoutes from './Router/auth.js'
 // Display startup banner
 displayStartupMessage();
 
@@ -120,6 +120,8 @@ app.get('/api', (req, res) => {
   console.log("log....")
   res.send("🚀 Server is live!");
 });
+
+app.use('/api/auth', authRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
