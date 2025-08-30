@@ -87,7 +87,7 @@ const ComplaintModal = ({ isOpen, onClose, complaint, theme = "light" }) => {
             {media?.map((m) => (
               <img
                 key={m._id}
-                src={m.url}
+                src={`${import.meta.env.VITE_URL}${m.url}`}
                 alt={m.type}
                 className="object-cover w-20 h-20 border rounded"
               />

@@ -1,5 +1,5 @@
 import express from "express"
-import marketPlace from "../controller/marketPlace.js"
+import {marketPlace} from "../controller/marketPlace.js"
 
 const router = express.Router();
 

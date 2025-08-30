@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   # Reverse proxy service
   nginx:
@@ -6,13 +8,12 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro   # keep config read-only
-      - ./logs:/var/log/nginx:rw               # allow logs
-      - ./cache:/var/cache/nginx:rw            # allow cache/temp
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./logs:/var/log/nginx:rw
+      - ./cache:/var/cache/nginx:rw
     depends_on:
       - client
       - server
-      # - ml-service
     restart: unless-stopped
     networks:
       - hackout-network
@@ -29,7 +30,6 @@ services:
       context: ./client
       dockerfile: Dockerfile
     container_name: hackout-client
-    # Remove expose since it's internal only
     restart: unless-stopped
     networks:
       - hackout-network
@@ -68,33 +68,23 @@ services:
       - ./server/uploads:/app/uploads
       - ./server/logs:/app/logs
 
-  # Python ML service
-  # ml-service:
-  #   build:
-  #     context: ./ml-service
-  #     dockerfile: Dockerfile
-  #   container_name: hackout-ml-service
-  #   expose:
-  #     - "8001"
-  #   restart: unless-stopped
-  #   networks:
-  #     - hackout-network
-  #   healthcheck:
-  #     test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 40s
-  #   environment:
-  #     - PYTHONPATH=/app
-  #   volumes:
-  #     - ./ml-service/app/model:/app/app/model:ro
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 2G
-  #       reservations:
-  #         memory: 1G
+  # Valkey service
+  valkey:
+    image: valkey/valkey
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - hackout-network
+
+  # Qdrant service
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    restart: unless-stopped
+    networks:
+      - hackout-network
 
 networks:
   hackout-network:
