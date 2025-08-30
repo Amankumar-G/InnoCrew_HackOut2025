@@ -19,9 +19,9 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useAppContext } from "../context/AppContext";
 import LoadingSpinner from "../components/common/LoadingSpinner";
+import ComplaintModal from "../components/ComplaintModal";
+import { fetchComplaintDetails } from "../utils/complaintApi";
 
-// API Base URL
-const API_BASE_URL = "${import.meta.env.VITE_URL}/api";
 
 const Profile = () => {
   const { user, token, getProfile } = useAuth();
@@ -39,6 +39,24 @@ const Profile = () => {
   });
 
   const [complaints, setComplaints] = useState([]);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState("");
+
+  const handleComplaintClick = (complaint) => {
+    setModalError("");
+    setModalOpen(true);
+    setModalLoading(false);
+    // Show dummy data for now
+    setSelectedComplaint(complaint);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedComplaint(null);
+    setModalError("");
+  };
 
   // Fetch user profile and stats
   useEffect(() => {
@@ -61,47 +79,8 @@ const Profile = () => {
             carbonCredits: userData.carbonCredits?.earned || 0,
             mangroveArea: userData.mangroveArea || 0
           });
+          setComplaints(userData.complaints);
         }
-
-        // TODO: Fetch user complaints/reports from API
-        // For now, using dummy data until complaints API is implemented
-        const dummyComplaints = [
-          {
-            id: 1,
-            type: "Illegal Cutting",
-            location: user?.location || "Unknown Location",
-            severity: "High",
-            status: "Resolved",
-            date: "2024-01-15",
-            description: "Reported illegal mangrove cutting in protected area",
-            points: 150,
-            carbonImpact: 2.5
-          },
-          {
-            id: 2,
-            type: "Pollution Incident",
-            location: user?.location || "Unknown Location",
-            severity: "Medium",
-            status: "Under Investigation",
-            date: "2024-01-12",
-            description: "Oil spill detected near mangrove roots",
-            points: 75,
-            carbonImpact: 1.2
-          },
-          {
-            id: 3,
-            type: "Restoration Success",
-            location: user?.location || "Unknown Location",
-            severity: "Positive",
-            status: "Completed",
-            date: "2024-01-10",
-            description: "Successfully planted 500 mangrove saplings",
-            points: 300,
-            carbonImpact: 5.0
-          }
-        ];
-        
-        setComplaints(dummyComplaints);
         
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -112,24 +91,6 @@ const Profile = () => {
 
     fetchUserData();
   }, [token, user?.location]);
-
-  // TODO: Replace with actual API calls when complaints endpoint is available
-  // const fetchComplaints = async () => {
-  //   try {
-  //     const response = await fetch(`${API_BASE_URL}/user/complaints`, {
-  //       headers: { 
-  //         Authorization: `Bearer ${token}`,
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       setComplaints(data);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching complaints:', error);
-  //   }
-  // };
 
   const getSeverityColor = (severity) => {
     switch (severity) {
@@ -163,9 +124,9 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <FaUser className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <FaUser className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <p className="text-gray-600">Please log in to view your profile</p>
         </div>
       </div>
@@ -180,9 +141,9 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           {/* Left Sidebar - User Details */}
           <div className="lg:col-span-1">
             <div className={`${
@@ -192,13 +153,13 @@ const Profile = () => {
             } rounded-xl p-6 shadow-lg border sticky top-8`}>
               
               {/* Animated User Avatar */}
-              <div className="text-center mb-6">
+              <div className="mb-6 text-center">
                 <div className="relative inline-block">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 p-1 mx-auto mb-4">
+                  <div className="w-32 h-32 p-1 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-400 to-emerald-500">
                     <img
                       src="./profile.avif"
                       alt={user.name}
-                      className="w-full h-full rounded-full object-cover border-4 border-white"
+                      className="object-cover w-full h-full border-4 border-white rounded-full"
                     />
                   </div>
                 </div>
@@ -270,7 +231,7 @@ const Profile = () => {
               </div>
 
               {/* Quick Stats */}
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
                 <h3 className={`text-lg font-semibold mb-3 ${
                   theme === "dark" ? "text-white" : "text-gray-800"
                 }`}>
@@ -309,7 +270,7 @@ const Profile = () => {
           {/* Right Section - Metrics and Complaints */}
           <div className="lg:col-span-3">
             {/* First Row - Metrics (40% height) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2">
               {/* Points Card */}
               <div className={`${
                 theme === "dark" 
@@ -317,7 +278,7 @@ const Profile = () => {
                   : "bg-white/60 backdrop-blur-sm border-gray-200"
               } rounded-xl p-6 shadow-lg border hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500">
                     <FaTrophy className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
@@ -348,27 +309,19 @@ const Profile = () => {
                   : "bg-white/60 backdrop-blur-sm border-gray-200"
               } rounded-xl p-6 shadow-lg border hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-r from-purple-400 to-indigo-500">
                     <FaMedal className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
                     <p className={`text-sm ${
                       theme === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}>
-                      Global Rank
+                      Carbon credits
                     </p>
                     <p className="text-2xl font-bold text-purple-600">
-                      {userStats.rank || 'Not Available'}
+                      {userStats.carbonCredits || 'Not Available'}
                     </p>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <FaTree className="w-4 h-4 text-green-500" />
-                  <span className={`text-sm ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-600"
-                  }`}>
-                    {userStats.rank ? 'Top 5% of conservationists' : 'Rank not available yet'}
-                  </span>
                 </div>
               </div>
             </div>
@@ -396,8 +349,8 @@ const Profile = () => {
               </div>
 
               {complaints.length === 0 ? (
-                <div className="text-center py-12">
-                  <FaTree className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <div className="py-12 text-center">
+                  <FaTree className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                   <p className={`text-lg ${
                     theme === "dark" ? "text-gray-300" : "text-gray-600"
                   }`}>
@@ -410,26 +363,27 @@ const Profile = () => {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="space-y-4 overflow-y-auto max-h-96">
                   {complaints.map((complaint) => (
                     <div
-                      key={complaint.id}
+                      key={complaint.id || complaint._id}
                       className={`${
                         theme === "dark" 
                           ? "bg-gray-700/60 border-gray-600" 
                           : "bg-gray-50/60 border-gray-200"
-                      } rounded-lg p-4 border hover:shadow-md transition-all duration-200`}
+                      } rounded-lg p-4 border hover:shadow-md transition-all duration-200 cursor-pointer`}
+                      onClick={() => handleComplaintClick(complaint)}
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
+                          <div className="flex items-center mb-2 space-x-3">
                             <h4 className={`font-semibold ${
                               theme === "dark" ? "text-white" : "text-gray-800"
                             }`}>
-                              {complaint.type}
+                              {complaint.category}
                             </h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(complaint.severity)}`}>
-                              {complaint.severity}
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(complaint.damageEstimate)}`}>
+                              {complaint.damageEstimate}
                             </span>
                           </div>
                           <p className={`text-sm mb-2 ${
@@ -441,20 +395,14 @@ const Profile = () => {
                             <span className={`flex items-center space-x-1 ${
                               theme === "dark" ? "text-gray-400" : "text-gray-500"
                             }`}>
-                              <FaMapMarkerAlt className="w-3 h-3" />
-                              <span>{complaint.location}</span>
-                            </span>
-                            <span className={`flex items-center space-x-1 ${
-                              theme === "dark" ? "text-gray-400" : "text-gray-500"
-                            }`}>
                               <FaCalendarAlt className="w-3 h-3" />
-                              <span>{complaint.date}</span>
+                              <span>{new Date(complaint.timestamp).toISOString().split("T")[0]
+}</span>
                             </span>
                           </div>
                         </div>
-                        
-                        <div className="text-right ml-4">
-                          <div className="flex items-center space-x-1 mb-2">
+                        <div className="ml-4 text-right">
+                          <div className="flex items-center mb-2 space-x-1">
                             {getStatusIcon(complaint.status)}
                             <span className={`text-sm font-semibold ${getStatusColor(complaint.status)}`}>
                               {complaint.status}
@@ -464,13 +412,7 @@ const Profile = () => {
                             <div className="flex items-center space-x-1">
                               <FaTrophy className="w-3 h-3 text-yellow-500" />
                               <span className="text-xs font-semibold text-yellow-600">
-                                +{complaint.points} pts
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <FaWater className="w-3 h-3 text-blue-500" />
-                              <span className="text-xs font-semibold text-blue-600">
-                                {complaint.carbonImpact} CO₂
+                                +{complaint.verification.verificationSummary.finalVerification.carbonCreditsEarned} pts
                               </span>
                             </div>
                           </div>
@@ -484,6 +426,29 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      {/* Complaint Modal */}
+      <ComplaintModal
+        isOpen={modalOpen}
+        onClose={handleModalClose}
+        complaint={selectedComplaint}
+        theme={theme}
+      />
+      {modalLoading && modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="p-8 bg-white rounded-lg shadow-lg">
+            <LoadingSpinner />
+            <p className="mt-2 text-gray-700">Loading complaint details...</p>
+          </div>
+        </div>
+      )}
+      {modalError && modalOpen && !modalLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="p-8 bg-white rounded-lg shadow-lg">
+            <p className="font-semibold text-red-600">{modalError}</p>
+            <button className="px-4 py-2 mt-4 bg-gray-200 rounded" onClick={handleModalClose}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
