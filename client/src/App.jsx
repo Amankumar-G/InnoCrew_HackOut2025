@@ -23,10 +23,11 @@ const LazyNotFound = React.lazy(() => import("./pages/NotFound"));
 const LazyProfile = React.lazy(() => import("./pages/Profile"));
 
 const Leaderboard = React.lazy(() => import("./pages/Leaderboard"));
+const CarbonCredits = React.lazy(() => import("./pages/CarbonCredits"));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
-  <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
     <LoadingSpinner size="lg" text="Loading Mangrove Watch..." />
   </div>
 );
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
         path: "/reportIncident",
         element: <ReportIncident />,
       },
+      {
+        path: "/carbon-credits",
+        element: <CarbonCredits/>
+      }
     ],
   },
   {
