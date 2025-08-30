@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { FaEye, FaEyeSlash, FaUser, FaEnvelope, FaLock, FaSignInAlt, FaUserPlus } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUser, FaEnvelope, FaLock, FaSignInAlt, FaUserPlus, FaPhone, FaMapMarkerAlt, FaBuilding } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useAppContext } from "../context/AppContext";
 
@@ -11,11 +11,14 @@ const Login = () => {
     name: "",
     email: "",
     password: "",
+    phone: "",
+    location: "",
+    organization: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const { login, signup } = useAuth();
+  const { login, register } = useAuth();
   const { theme } = useAppContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,7 +47,27 @@ const Login = () => {
         if (!formData.name.trim()) {
           throw new Error("Name is required");
         }
-        result = await signup(formData.name, formData.email, formData.password);
+        if (!formData.email.trim()) {
+          throw new Error("Email is required");
+        }
+        if (!formData.password.trim()) {
+          throw new Error("Password is required");
+        }
+        if (!formData.phone.trim()) {
+          throw new Error("Phone number is required");
+        }
+        if (!formData.location.trim()) {
+          throw new Error("Location is required");
+        }
+        
+        result = await register(
+          formData.name, 
+          formData.email, 
+          formData.password, 
+          formData.phone, 
+          formData.location, 
+          formData.organization
+        );
       }
 
       if (result.success) {
@@ -61,7 +84,7 @@ const Login = () => {
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setFormData({ name: "", email: "", password: "" });
+    setFormData({ name: "", email: "", password: "", phone: "", location: "", organization: "" });
     setError("");
   };
 
@@ -84,7 +107,7 @@ const Login = () => {
           }`}>
             {isLogin 
               ? "Sign in to your account to continue" 
-              : "Join us and start your journey"
+              : "Join us and start your conservation journey"
             }
           </p>
         </div>
@@ -102,7 +125,7 @@ const Login = () => {
                 <label htmlFor="name" className={`block text-sm font-medium ${
                   theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
-                  Full Name
+                  Full Name *
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -133,7 +156,7 @@ const Login = () => {
               <label htmlFor="email" className={`block text-sm font-medium ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                Email Address
+                Email Address *
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -158,12 +181,107 @@ const Login = () => {
               </div>
             </div>
 
+            {/* Phone field (only for signup) */}
+            {!isLogin && (
+              <div>
+                <label htmlFor="phone" className={`block text-sm font-medium ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Phone Number *
+                </label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaPhone className={`h-5 w-5 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-400'
+                    }`} />
+                  </div>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required={!isLogin}
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className={`appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Location field (only for signup) */}
+            {!isLogin && (
+              <div>
+                <label htmlFor="location" className={`block text-sm font-medium ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Location *
+                </label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaMapMarkerAlt className={`h-5 w-5 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-400'
+                    }`} />
+                  </div>
+                  <input
+                    id="location"
+                    name="location"
+                    type="text"
+                    required={!isLogin}
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    className={`appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                    placeholder="Enter your location (City, Country)"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Organization field (only for signup) */}
+            {!isLogin && (
+              <div>
+                <label htmlFor="organization" className={`block text-sm font-medium ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Organization (Optional)
+                </label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaBuilding className={`h-5 w-5 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-400'
+                    }`} />
+                  </div>
+                  <input
+                    id="organization"
+                    name="organization"
+                    type="text"
+                    value={formData.organization}
+                    onChange={handleInputChange}
+                    className={`appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                    placeholder="Enter your organization name"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Password field */}
             <div>
               <label htmlFor="password" className={`block text-sm font-medium ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                Password
+                Password *
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -207,15 +325,6 @@ const Login = () => {
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                 {error}
-              </div>
-            )}
-
-            {/* Demo credentials hint */}
-            {isLogin && (
-              <div className={`text-xs ${
-                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                💡 Demo: demo@example.com / password
               </div>
             )}
 

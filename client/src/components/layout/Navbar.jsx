@@ -13,6 +13,7 @@ import {
   FaUsers,
   FaLeaf,
   FaMedal,
+  FaFilePdf,
 } from "react-icons/fa";
 import { useAppContext } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
@@ -29,7 +30,7 @@ const Navbar = () => {
     { name: "Restoration", href: "/restoration", icon: FaTree },
     { name: "Carbon Credits", href: "/carbon-credits", icon: FaLeaf },
     { name: "Leaderboard", href: "/leaderboard", icon: FaMedal },
-    { name: "Analytics", href: "/analytics", icon: FaChartLine },
+    { name: "PDF Chat", href: "/pdfChat", icon: FaFilePdf }, // ✅ new link
   ];
 
   const isActive = (path) => location.pathname === path;
