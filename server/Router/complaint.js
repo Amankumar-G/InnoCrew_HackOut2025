@@ -16,9 +16,10 @@ router.post(
         req.body;
 
       // Map uploaded media files
-      const mediaFiles = req.files.map(file => ({
-        url: `/uploads/${file.filenamez}`,
-        type: file.mimetype.startsWith("video") ? "video" : "photo"
+      // Map uploaded media files (Cloudinary URLs)
+      const mediaFiles = req.files.map((file) => ({
+        url: file.path || file.secure_url, // Cloudinary gives path or secure_url
+        type: file.mimetype.startsWith("video") ? "video" : "photo",
       }));
 
       // Include user ID from authenticated JWT

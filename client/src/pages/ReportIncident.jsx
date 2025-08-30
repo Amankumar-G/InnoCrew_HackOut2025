@@ -164,7 +164,7 @@ export default function ReportIncident() {
 
     try {
       // Debug: Log the environment variable
-      console.log("API URL:", import.meta.env.VITE_URL);
+      // console.log("API URL:", import.meta.env.VITE_URL);
 
       // Debug: Log the token
       console.log("User token:", token || user?.token);
@@ -186,7 +186,7 @@ export default function ReportIncident() {
         console.log(key, value);
       }
 
-      const apiUrl = `${import.meta.env.VITE_URL}/api/complaints`;
+      const apiUrl = `/api/complaints`;
       console.log("Making request to:", apiUrl);
 
       const res = await axios.post(apiUrl, fd, {

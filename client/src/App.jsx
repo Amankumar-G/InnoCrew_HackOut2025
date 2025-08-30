@@ -15,6 +15,10 @@ import { AppProvider } from "./context/AppContext";
 import { AuthProvider } from "./context/AuthContext";
 import Pdf from "./pages/Pdf";
 import ReportIncident from "./pages/ReportIncident";
+// Console log to check VITE_URL environment variable
+console.log("🔍 Environment Variables Check:");
+console.log("VITE_URL:");
+console.log("NODE_ENV:" );
 
 // Lazy load components for better performance
 const LazyHome = React.lazy(() => import("./pages/Home"));
