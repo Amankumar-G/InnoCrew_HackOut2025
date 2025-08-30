@@ -20,6 +20,7 @@ import {
 
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function ReportIncident() {
   const [formData, setFormData] = useState({
@@ -118,6 +119,12 @@ export default function ReportIncident() {
       }
     );
   };
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (submitStatus == "success") {
+      navigate("/profile");
+    }
+  }, [submitStatus]);
 
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
@@ -254,42 +261,6 @@ export default function ReportIncident() {
             area. Your reports help us respond quickly and effectively.
           </p>
         </div>
-
-        {/* Success Message */}
-        {submitStatus === "success" && (
-          <div className="bg-green-50 border-2 border-green-300 rounded-xl p-6 mb-8 flex items-center space-x-4">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <FaCheck className="text-white text-xl" />
-            </div>
-            <div>
-              <h3 className="text-green-800 font-bold text-lg">
-                Report Submitted Successfully!
-              </h3>
-              <p className="text-green-700">
-                Thank you for helping protect our mangroves. We'll investigate
-                this incident promptly.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {submitStatus === "error" && (
-          <div className="bg-red-50 border-2 border-red-300 rounded-xl p-6 mb-8 flex items-center space-x-4">
-            <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-              <FaExclamationTriangle className="text-white text-xl" />
-            </div>
-            <div>
-              <h3 className="text-red-800 font-bold text-lg">
-                Error Submitting Report
-              </h3>
-              <p className="text-red-700">
-                There was an error submitting your report. Please check the
-                console for details and try again.
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Form */}
         {submitStatus !== "error" && (
@@ -697,6 +668,42 @@ export default function ReportIncident() {
                   )}
                 </button>
               </div>
+
+              {/* Success Message */}
+              {submitStatus === "success" && (
+                <div className="bg-green-50 border-2 border-green-300 rounded-xl p-6 mb-8 flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                    <FaCheck className="text-white text-xl" />
+                  </div>
+                  <div>
+                    <h3 className="text-green-800 font-bold text-lg">
+                      Report Submitted Successfully!
+                    </h3>
+                    <p className="text-green-700">
+                      Thank you for helping protect our mangroves. We'll
+                      investigate this incident promptly.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {submitStatus === "error" && (
+                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-6 mb-8 flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+                    <FaExclamationTriangle className="text-white text-xl" />
+                  </div>
+                  <div>
+                    <h3 className="text-red-800 font-bold text-lg">
+                      Error Submitting Report
+                    </h3>
+                    <p className="text-red-700">
+                      There was an error submitting your report. Please check
+                      the console for details and try again.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

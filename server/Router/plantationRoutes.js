@@ -112,31 +112,76 @@ router.post(
   }
 );
 
+// =========================
+// GET ALL PLANTATIONS
+// =========================
 router.get(
   "/",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     try {
-      // fetch user data to check role
       const userData = await User.findById(req.user._id).select(
         "-password -__v -createdAt -updatedAt"
       );
-
-      if (!userData || userData.role !== "admin") {
-        return res.status(403).json({ error: "Not authorized" });
+      console.log(userData)
+      if (!userData) {
+        return res.status(404).json({ error: "User not found" });
       }
 
-      // Get all plantations with project owner populated
-      const plantations = await Plantation.find()
-        .populate("projectOwnerId", "name email role") // only show limited user fields
-        .sort({ createdAt: -1 }); // latest first
+      let query = {};
+
+      // If not admin → filter only plantations owned by the user
+      if (userData.role !== "admin") {
+        query = { projectOwnerId: req.user._id };
+      }
+      console.log(query);
+      const plantations = await Plantation.find(query)
+        .populate("projectOwnerId", "name email role")
+        .select(
+          "plantationName location area species plantingDate survivalRate status images soilCertificate plantCertificate additionalDocs carbonCreditGenerated marketplaceStatus createdAt"
+        )
+        .sort({ createdAt: -1 });
 
       return res.json({
         count: plantations.length,
         plantations,
       });
     } catch (error) {
-      console.error("Error fetching plantations for admin:", error);
+      console.error("Error fetching plantations:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+
+// =========================
+// GET ONE PLANTATION BY ID
+// =========================
+router.get(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const plantation = await Plantation.findById(req.params.id)
+        .populate("projectOwnerId", "name email role")
+        .select(
+          "plantationName location area species plantingDate survivalRate status images soilCertificate plantCertificate additionalDocs carbonCreditGenerated marketplaceStatus createdAt verificationSummary"
+        );
+
+      if (!plantation) {
+        return res.status(404).json({ error: "Plantation not found" });
+      }
+
+      // Check if user is admin OR owner of the plantation
+      if (
+        req.user.role !== "admin" &&
+        plantation.projectOwnerId._id.toString() !== req.user._id.toString()
+      ) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      return res.json(plantation);
+    } catch (error) {
+      console.error("Error fetching plantation by ID:", error);
       res.status(500).json({ error: "Server error" });
     }
   }
@@ -149,6 +194,8 @@ router.put(
     try {
       const { id } = req.params;
       const { status, adminComment } = req.body;
+
+      // Fetch user role
       const userData = await User.findById(req.user._id).select(
         "-password -__v -createdAt -updatedAt"
       );
@@ -156,18 +203,13 @@ router.put(
       if (!userData || userData.role !== "admin") {
         return res.status(403).json({ error: "Not authorized" });
       }
-      // Allowed status values from schema
-      const allowedStatuses = [
-        "pending_verification",
-        "verified_by_ai",
-        "approved_by_admin",
-        "rejected",
-        "under_review",
-        "admin_verification_needed",
-      ];
 
+      // Allowed input from admin
+      const allowedStatuses = ["approved", "rejected"];
       if (!allowedStatuses.includes(status)) {
-        return res.status(400).json({ error: "Invalid status value" });
+        return res
+          .status(400)
+          .json({ error: "Admin can only approve or reject plantations" });
       }
 
       const plantation = await Plantation.findById(id);
@@ -175,29 +217,74 @@ router.put(
         return res.status(404).json({ error: "Plantation not found" });
       }
 
-      // Only Admins should be allowed (example: role check)
-      if (req.user.role !== "admin") {
-        return res.status(403).json({ error: "Not authorized" });
+      // Prevent update if plantation is under_review
+      if (plantation.status === "under_review") {
+        return res.status(400).json({
+          error:
+            "Cannot update plantation status while it is in under_review state",
+        });
       }
 
-      plantation.status = status;
-      plantation.adminId = req.user._id;
-      if (adminComment) plantation.adminComment = adminComment;
-
-      if (status === "approved_by_admin") {
+      // Map simple admin status → schema status
+      let newStatus;
+      if (status === "approved") {
+        newStatus = "approved_by_admin";
+        plantation.marketplaceStatus = "listed"; // ✅ auto-list marketplace
         plantation.adminApproved = true;
       } else if (status === "rejected") {
+        newStatus = "rejected";
+        plantation.marketplaceStatus = "not_listed"; // ✅ ensure stays hidden
         plantation.adminApproved = false;
       }
+
+      // Update
+      plantation.status = newStatus;
+      plantation.adminId = req.user._id;
+      if (adminComment) plantation.adminComment = adminComment;
 
       await plantation.save();
 
       return res.json({
-        message: "Plantation status updated successfully",
+        message: `Plantation ${status} successfully`,
         plantation,
       });
     } catch (error) {
       console.error("Error updating plantation status:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+
+// Delete plantation (user can delete their own, admin can delete any)
+router.delete(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const plantation = await Plantation.findById(id);
+
+      if (!plantation) {
+        return res.status(404).json({ error: "Plantation not found" });
+      }
+
+      // Check if user owns the plantation or is admin
+      if (plantation.projectOwnerId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      // Only allow deletion if plantation is still pending verification
+      if (plantation.status !== "pending_verification" && req.user.role !== "admin") {
+        return res.status(400).json({ error: "Cannot delete plantation after verification has started" });
+      }
+
+      await Plantation.findByIdAndDelete(id);
+
+      return res.json({
+        message: "Plantation deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting plantation:", error);
       res.status(500).json({ error: "Server error" });
     }
   }

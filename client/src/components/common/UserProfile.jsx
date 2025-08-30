@@ -1,20 +1,40 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaUser, FaSignOutAlt, FaCog, FaChevronDown } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FaUser,
+  FaSignOutAlt,
+  FaChevronDown,
+  FaShieldAlt,
+} from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
-import { useAppContext } from "../../context/AppContext";
-import { Link } from "react-router-dom";
 
 const UserProfile = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
-  const { theme } = useAppContext();
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
+
+  // Get the appropriate profile path based on user role
+  const getProfilePath = () => {
+    return user?.role === "admin" ? "/admin-profile" : "/profile";
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+    setIsDropdownOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    navigate(getProfilePath());
+    setIsDropdownOpen(false);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
+        setIsDropdownOpen(false);
       }
     };
 
@@ -24,122 +44,48 @@ const UserProfile = () => {
     };
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    setIsOpen(false);
-  };
-
   if (!user) return null;
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Profile Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`group flex items-center space-x-2 p-2 rounded-lg transition-all duration-200 hover:bg-opacity-80 
-          ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200"
       >
-        <img
-          src="./profile.avif"
-          alt={user.name}
-          className="w-8 h-8 rounded-full object-cover border-2 border-emerald-500"
-        />
-
-        <span
-          className={`hidden md:block text-sm font-medium ${
-            theme === "dark"
-              ? "text-gray-800 group-hover:text-white"
-              : "text-gray-900"
-          }`}
-        >
-          {user.name}
-        </span>
-
+        <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+          <span className="text-white text-sm font-semibold">
+            {user.name?.charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <span className="hidden sm:block text-sm font-medium">{user.name}</span>
+        {user.role === "admin" && (
+          <FaShieldAlt className="w-3 h-3 text-purple-500" />
+        )}
         <FaChevronDown
           className={`w-3 h-3 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          } ${
-            theme === "dark"
-              ? "text-gray-800 group-hover:text-white"
-              : "text-gray-600"
+            isDropdownOpen ? "rotate-180" : ""
           }`}
         />
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div
-          className={`absolute right-0 mt-2 w-64 rounded-lg shadow-lg py-2 z-50 ${
-            theme === "dark"
-              ? "bg-gray-800 border border-gray-700"
-              : "bg-white border border-gray-200"
-          }`}
-        >
-          {/* User Info */}
-          <div
-            className={`px-4 py-3 border-b ${
-              theme === "dark" ? "border-gray-700" : "border-gray-200"
-            }`}
+      {isDropdownOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+          <button
+            onClick={handleProfileClick}
+            className="flex items-center space-x-2 w-full px-4 py-2 text-left text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200"
           >
-            <div className="flex items-center space-x-3">
-              <img
-                src="./profile.avif"
-                alt={user.name}
-                className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500"
-              />
-              <div>
-                <p
-                  className={`text-sm font-medium ${
-                    theme === "dark" ? "text-white" : "text-gray-900"
-                  }`}
-                >
-                  {user.name}
-                </p>
-                <p
-                  className={`text-xs ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  {user.email}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Menu Items */}
-          <div className="py-1">
-            <Link
-              to="/profile"
-              onClick={() => setIsOpen(false)}
-              className={`w-full flex items-center px-4 py-2 text-sm transition-colors duration-200 ${
-                theme === "dark"
-                  ? "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <FaUser className="mr-3 h-4 w-4" />
-              Profile
-            </Link>
-          </div>
-
-          {/* Logout */}
-          <div
-            className={`pt-1 border-t ${
-              theme === "dark" ? "border-gray-700" : "border-gray-200"
-            }`}
+            <FaUser className="w-4 h-4" />
+            <span>
+              {user.role === "admin" ? "Admin Dashboard" : "My Profile"}
+            </span>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-2 w-full px-4 py-2 text-left text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
           >
-            <button
-              onClick={handleLogout}
-              className={`w-full flex items-center px-4 py-2 text-sm transition-colors duration-200 ${
-                theme === "dark"
-                  ? "text-red-400 hover:bg-red-900/20 hover:text-red-300"
-                  : "text-red-600 hover:bg-red-50 hover:text-red-700"
-              }`}
-            >
-              <FaSignOutAlt className="mr-3 h-4 w-4" />
-              Sign Out
-            </button>
-          </div>
+            <FaSignOutAlt className="w-4 h-4" />
+            <span>Sign Out</span>
+          </button>
         </div>
       )}
     </div>

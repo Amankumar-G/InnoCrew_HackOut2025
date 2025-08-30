@@ -88,7 +88,6 @@ const plantationCronJob = cron.schedule(
 
           // NEW: store the full verification data and summary
           plantation.verificationSummary = verificationData.verificationSummary;
-          plantation.fullVerificationResult = verificationResult.data;
 
           await plantation.save();
 
