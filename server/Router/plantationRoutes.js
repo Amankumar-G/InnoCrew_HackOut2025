@@ -123,13 +123,14 @@ router.post(
   }
 );
 
-// Get all plantations (admin only)
+// =========================
+// GET ALL PLANTATIONS
+// =========================
 router.get(
   "/",
   passport.authenticate("jwt", { session: false }),
   async (req, res) => {
     try {
-      // fetch user data to check role
       const userData = await User.findById(req.user._id).select(
         "-password -__v -createdAt -updatedAt"
       );
@@ -137,6 +138,8 @@ router.get(
       if (!userData || userData.role !== "admin") {
         return res.status(403).json({ error: "Not authorized" });
       }
+
+      let query = {};
 
       // Get all plantations with project owner populated
       const plantations = await Plantation.find()
@@ -151,7 +154,7 @@ router.get(
         plantations,
       });
     } catch (error) {
-      console.error("Error fetching plantations for admin:", error);
+      console.error("Error fetching plantations:", error);
       res.status(500).json({ error: "Server error" });
     }
   }
@@ -201,7 +204,7 @@ router.get(
         return res.status(403).json({ error: "Not authorized" });
       }
 
-      return res.json({ plantation });
+      return res.json(plantation);
     } catch (error) {
       console.error("Error fetching plantation:", error);
       res.status(500).json({ error: "Server error" });
@@ -235,11 +238,9 @@ router.put(
         plantation.status !== "pending_verification" &&
         req.user.role !== "admin"
       ) {
-        return res
-          .status(400)
-          .json({
-            error: "Cannot update plantation after verification has started",
-          });
+        return res.status(400).json({
+          error: "Cannot update plantation after verification has started",
+        });
       }
 
       const updatedPlantation = await Plantation.findByIdAndUpdate(
@@ -259,7 +260,6 @@ router.put(
   }
 );
 
-// Update plantation status (admin only)
 router.put(
   "/:id/status",
   passport.authenticate("jwt", { session: false }),
@@ -354,11 +354,9 @@ router.delete(
         plantation.status !== "pending_verification" &&
         req.user.role !== "admin"
       ) {
-        return res
-          .status(400)
-          .json({
-            error: "Cannot delete plantation after verification has started",
-          });
+        return res.status(400).json({
+          error: "Cannot delete plantation after verification has started",
+        });
       }
 
       await Plantation.findByIdAndDelete(id);

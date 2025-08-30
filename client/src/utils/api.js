@@ -1,6 +1,6 @@
 // API utility functions for centralized API calls
 
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = `${import.meta.env.VITE_URL}/api`;
 
 // Helper function to get auth headers
 const getAuthHeaders = (token) => {
@@ -27,6 +27,7 @@ const apiCall = async (endpoint, options = {}) => {
   try {
     const response = await fetch(url, config);
     const data = await response.json();
+    // console.log(data.data)
 
     if (!response.ok) {
       throw new Error(data.message || `HTTP error! status: ${response.status}`);
@@ -168,6 +169,16 @@ export const userAPI = {
       method: 'POST',
       body: JSON.stringify(complaintData),
       token,
+    });
+  },
+};
+
+// Marketplace API calls
+export const marketplaceAPI = {
+  // Get marketplace plantations
+  getMarketplacePlantations: async (token) => {
+    return apiCall('/marketplace', {
+      method: 'GET'
     });
   },
 };
