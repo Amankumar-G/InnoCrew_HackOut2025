@@ -12,8 +12,6 @@ const aggregatorLLM = new ChatOpenAI({ modelName: "gpt-4o-mini", temperature: 0.
 
 /**
  * Image Analysis Agent - Detect mangrove cutting/dumping/fire evidence
- * Input: { media: Array<{type: 'photo'|'video', url: string, metadata: object}> }
- * Output: { imageCheck: boolean, confidence: number, detectedIssues: string[], analysisDetails: string }
  */
 async function imageAnalysisAgent(state) {
   console.log("\n=== IMAGE ANALYSIS AGENT STARTED ===");
@@ -52,8 +50,6 @@ async function imageAnalysisAgent(state) {
 
 /**
  * Geo-Validation Agent - Validate location and detect recent changes
- * Input: { location: {lat: number, lng: number, address: string}, complaint_date: string }
- * Output: { geoCheck: boolean, isInMangroveZone: boolean, recentChangesDetected: boolean, geoDetails: string }
  */
 async function geoValidationAgent(state) {
   console.log("\n=== GEO-VALIDATION AGENT STARTED ===");
@@ -93,8 +89,6 @@ async function geoValidationAgent(state) {
 
 /**
  * NLP/Text Agent - Analyze complaint text for validity and severity
- * Input: { description: string, complaint_category: string }
- * Output: { textCheck: boolean, preliminarySeverity: number, severityKeywords: string[], textAnalysis: string }
  */
 async function nlpTextAgent(state) {
   console.log("\n=== NLP/TEXT AGENT STARTED ===");
@@ -133,8 +127,6 @@ async function nlpTextAgent(state) {
 
 /**
  * Aggregator Agent - Combine all agent results and make final decision
- * Input: All previous agent results
- * Output: { finalVerification: object, complaintStatus: 'verified'|'rejected', finalSeverity: 'low'|'medium'|'high' }
  */
 async function aggregatorAgent(state) {
   console.log("\n=== AGGREGATOR AGENT STARTED ===");
@@ -159,6 +151,9 @@ async function aggregatorAgent(state) {
       .replace(/^json\s*/i, '')
       .replace(/```/g, '')
       .trim());
+
+    // Ensure carbonCreditsEarned is set (default 0)
+    finalResult.carbonCreditsEarned = finalResult.carbonCreditsEarned || 0;
     
     console.log("Final Verification Result:", finalResult);
     io.emit("final-verification", finalResult);
@@ -167,87 +162,72 @@ async function aggregatorAgent(state) {
       finalVerification: finalResult,
       complaintStatus: finalResult.complaintStatus,
       finalSeverity: finalResult.finalSeverity,
-      verificationComplete: true
+      verificationComplete: true,
+      carbonCreditsEarned: finalResult.carbonCreditsEarned
     };
   } catch (error) {
     console.error("Aggregator Error:", error);
     return { 
-      finalVerification: { complaintStatus: 'rejected', error: error.message },
+      finalVerification: { complaintStatus: 'rejected', error: error.message, carbonCreditsEarned: 0 },
       complaintStatus: 'rejected',
       finalSeverity: 'low',
-      verificationComplete: true
+      verificationComplete: true,
+      carbonCreditsEarned: 0
     };
   }
 }
-
 /**
  * Main verification workflow function
- * @param {Object} complaintData - The complaint data to verify
- * @param {Array} complaintData.media - Array of media files (photos/videos)
- * @param {Object} complaintData.location - Location data {lat, lng, address}
- * @param {string} complaintData.description - Complaint description text
- * @param {string} complaintData.complaint_category - Category of complaint
- * @param {string} complaintData.complaint_date - Date of complaint
- * @returns {Object} Final verification state
  */
 async function runMangroveVerification(complaintData) {
   const { media, location, description, complaint_category, complaint_date } = complaintData;
   
   const workflow = new StateGraph({
     channels: {
-      // Input channels
       media: { default: () => media, aggregate: "last" },
       location: { default: () => location, aggregate: "last" },
       description: { default: () => description, aggregate: "last" },
       complaint_category: { default: () => complaint_category, aggregate: "last" },
       complaint_date: { default: () => complaint_date, aggregate: "last" },
       
-      // Agent result channels
       imageAnalysis: { default: () => null, aggregate: "last" },
       geoValidation: { default: () => null, aggregate: "last" },
       textAnalysis: { default: () => null, aggregate: "last" },
       
-      // Check result channels
       imageCheck: { default: () => false, aggregate: "last" },
       geoCheck: { default: () => false, aggregate: "last" },
       textCheck: { default: () => false, aggregate: "last" },
       
-      // Confidence and severity channels
       imageConfidence: { default: () => 0, aggregate: "last" },
       preliminarySeverity: { default: () => 0, aggregate: "last" },
       
-      // Final result channels
       finalVerification: { default: () => null, aggregate: "last" },
       complaintStatus: { default: () => 'pending', aggregate: "last" },
       finalSeverity: { default: () => 'low', aggregate: "last" },
       verificationComplete: { default: () => false, aggregate: "last" },
       
-      // Additional tracking
-      isInMangroveZone: { default: () => false, aggregate: "last" }
+      isInMangroveZone: { default: () => false, aggregate: "last" },
+      carbonCreditsEarned: { default: () => 0, aggregate: "last" } // new channel
     },
   });
 
-  // Add all agent nodes
-  workflow.addNode("imageAnalysis", imageAnalysisAgent);
-  workflow.addNode("geoValidation", geoValidationAgent);
-  workflow.addNode("nlpText", nlpTextAgent);
-  workflow.addNode("aggregator", aggregatorAgent);
+  workflow.addNode("imageAgent", imageAnalysisAgent);
+  workflow.addNode("geoAgent", geoValidationAgent);
+  workflow.addNode("textAgent", nlpTextAgent);
+  workflow.addNode("aggregatorAgent", aggregatorAgent);
 
-  // Define the workflow edges - agents run in parallel then aggregate
-  workflow.addEdge(START, "imageAnalysis");
-  workflow.addEdge(START, "geoValidation");
-  workflow.addEdge(START, "nlpText");
-  
-  // All three agents feed into the aggregator
-  workflow.addEdge("imageAnalysis", "aggregator");
-  workflow.addEdge("geoValidation", "aggregator");
-  workflow.addEdge("nlpText", "aggregator");
-  
-  // Aggregator is the final step
-  workflow.addEdge("aggregator", END);
+  workflow.addEdge(START, "imageAgent");
+  workflow.addEdge(START, "geoAgent");
+  workflow.addEdge(START, "textAgent");
+
+  workflow.addEdge("imageAgent", "aggregatorAgent");
+  workflow.addEdge("geoAgent", "aggregatorAgent");
+  workflow.addEdge("textAgent", "aggregatorAgent");
+
+  workflow.addEdge("aggregatorAgent", END);
 
   console.log("Starting Mangrove Complaint Verification Workflow...");
-  io.emit("workflow-start", { complaint_category, location: location.address });
+  io.emit("workflow-start", { complaint_category, location: location?.address || "unknown" });
 
   const app = workflow.compile();
   const finalState = await app.invoke({
@@ -262,7 +242,8 @@ async function runMangroveVerification(complaintData) {
   io.emit("workflow-complete", {
     status: finalState.complaintStatus,
     severity: finalState.finalSeverity,
-    verification: finalState.finalVerification
+    verification: finalState.finalVerification,
+    carbonCreditsEarned: finalState.carbonCreditsEarned
   });
   
   return finalState;
@@ -270,8 +251,6 @@ async function runMangroveVerification(complaintData) {
 
 /**
  * Utility function to create a verification summary
- * @param {Object} verificationState - Final state from verification workflow
- * @returns {Object} Formatted verification summary
  */
 function createVerificationSummary(verificationState) {
   return {
@@ -279,6 +258,7 @@ function createVerificationSummary(verificationState) {
     timestamp: new Date().toISOString(),
     status: verificationState.complaintStatus,
     severity: verificationState.finalSeverity,
+    carbonCreditsEarned: verificationState.carbonCreditsEarned || 0, // new field
     checks: {
       image: {
         passed: verificationState.imageCheck,

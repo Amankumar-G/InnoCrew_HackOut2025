@@ -10,9 +10,10 @@ export async function runVerificationWorkflow(complaint) {
     const complaintData = {
       media: complaint.media || [],
       location: {
-        lat: complaint.latitude,
-        lng: complaint.longitude,
-        address: complaint.location
+        // Fix: Extract lat/lng correctly from complaint.location
+        lat: complaint.location?.lat || complaint.latitude,
+        lng: complaint.location?.lng || complaint.longitude,
+        address: complaint.landmark || complaint.address || `${complaint.location?.lat}, ${complaint.location?.lng}`
       },
       description: complaint.description,
       complaint_category: complaint.category,
@@ -36,7 +37,8 @@ export async function runVerificationWorkflow(complaint) {
         geoCheck: verificationState.geoCheck,
         textCheck: verificationState.textCheck,
         severity: verificationState.finalSeverity,
-        confidenceScore: verificationState.imageConfidence,
+        carbonCreditsEarned : verificationState.carbonCreditsEarned * 0.01,
+        confidenceScore: verificationState.imageConfidence || 0,
         verificationSummary: summary,
         fullAnalysis: {
           imageAnalysis: verificationState.imageAnalysis,
