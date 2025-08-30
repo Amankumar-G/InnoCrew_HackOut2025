@@ -49,7 +49,6 @@ const PlantationSchema = new Schema(
     severityFlags: [{ type: String }],
     verificationTimestamp: { type: Date },
     verificationSummary: { type: Object }, // store summary
-    fullVerificationResult: { type: Object }, // store full AI result
 
     // === Admin Interaction ===
     adminApproved: { type: Boolean },

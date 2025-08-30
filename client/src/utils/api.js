@@ -82,6 +82,68 @@ export const authAPI = {
   },
 };
 
+// Plantation API calls
+export const plantationAPI = {
+  // Submit new plantation
+  submitPlantation: async (formData, token) => {
+    const url = `${API_BASE_URL}/plantation`;
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Plantation submission failed:', error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Get user's plantations
+  getUserPlantations: async (token) => {
+    return apiCall('/plantation/user', {
+      method: 'GET',
+      token,
+    });
+  },
+
+  // Get plantation by ID
+  getPlantationById: async (id, token) => {
+    return apiCall(`/plantation/${id}`, {
+      method: 'GET',
+      token,
+    });
+  },
+
+  // Update plantation
+  updatePlantation: async (id, plantationData, token) => {
+    return apiCall(`/plantation/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(plantationData),
+      token,
+    });
+  },
+
+  // Delete plantation
+  deletePlantation: async (id, token) => {
+    return apiCall(`/plantation/${id}`, {
+      method: 'DELETE',
+      token,
+    });
+  },
+};
+
 // User API calls (for future use)
 export const userAPI = {
   // Get user stats
