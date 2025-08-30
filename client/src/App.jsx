@@ -18,6 +18,7 @@ import { AuthProvider } from "./context/AuthContext";
 const LazyHome = React.lazy(() => import("./pages/Home"));
 const LazyLogin = React.lazy(() => import("./pages/Login"));
 const LazyNotFound = React.lazy(() => import("./pages/NotFound"));
+const LazyProfile = React.lazy(() => import("./pages/Profile"));
 
 const Leaderboard = React.lazy(() => import("./pages/Leaderboard"));
 
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
       {
         path: "/leaderboard",
         element: <Leaderboard />,
+      },
+      {
+        path: "/profile",
+        element: <LazyProfile />,
       },
     ],
   },
