@@ -14,7 +14,7 @@ export default function Leaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_URL}/api/leaderboard`, {
+        const res = await axios.get(`/api/leaderboard`, {
           withCredentials: true, // <-- goes here
           headers: {
             Authorization: `Bearer ${user.token}`, // replace with actual token

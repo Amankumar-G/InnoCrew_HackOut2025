@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # Reverse proxy service
   nginx:
@@ -41,7 +39,9 @@ services:
       start_period: 40s
     environment:
       - NODE_ENV=production
-      - VITE_URL="http://localhost"
+      - VITE_URL=http://localhost
+    env_file:
+    - ./client/.env
 
   # Node.js backend service
   server:
