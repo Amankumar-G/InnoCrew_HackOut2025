@@ -24,6 +24,7 @@ const LazyProfile = React.lazy(() => import("./pages/Profile"));
 
 const Leaderboard = React.lazy(() => import("./pages/Leaderboard"));
 const CarbonCredits = React.lazy(() => import("./pages/CarbonCredits"));
+const Restoration = React.lazy(() => import("./pages/Restoration"));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
       {
         path: "/carbon-credits",
         element: <CarbonCredits/>
+      },
+      {
+        path: "/restoration",
+        element: <Restoration/>
       }
     ],
   },
