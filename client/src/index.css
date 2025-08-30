@@ -1,3 +1,194 @@
-@import "tailwindcss";
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* Custom Mangrove Theme Styles */
+@layer base {
+  /* Custom scrollbar for mangrove theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f0fdf4;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #16a34a, #059669);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #15803d, #047857);
+  }
+  
+  /* Dark mode scrollbar */
+  .dark ::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #059669, #0d9488);
+  }
+  
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #047857, #0f766e);
+  }
+}
+
+@layer components {
+  /* Custom mangrove gradient backgrounds */
+  .mangrove-gradient {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 25%, #86efac 50%, #4ade80 75%, #22c55e 100%);
+  }
+  
+  .mangrove-gradient-dark {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 25%, #047857 50%, #059669 75%, #10b981 100%);
+  }
+  
+  /* Floating animation for mangrove elements */
+  .float-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  /* Pulse animation for important elements */
+  .mangrove-pulse {
+    animation: mangrove-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes mangrove-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+  
+  /* Custom card hover effects */
+  .mangrove-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .mangrove-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(34, 197, 94, 0.1), 0 10px 10px -5px rgba(34, 197, 94, 0.04);
+  }
+  
+  /* Custom button styles */
+  .btn-mangrove {
+    background: linear-gradient(135deg, #16a34a, #059669);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-mangrove:hover {
+    background: linear-gradient(135deg, #15803d, #047857);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+  }
+  
+  /* Custom text gradients */
+  .text-mangrove-gradient {
+    background: linear-gradient(135deg, #16a34a, #059669, #0d9488);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Custom border gradients */
+  .border-mangrove-gradient {
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, #16a34a, #059669) border-box;
+  }
+  
+  .dark .border-mangrove-gradient {
+    background: linear-gradient(#1f2937, #1f2937) padding-box,
+                linear-gradient(135deg, #16a34a, #059669) border-box;
+  }
+  
+  /* Custom glass morphism effect */
+  .mangrove-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .dark .mangrove-glass {
+    background: rgba(31, 41, 55, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Custom loading spinner for mangrove theme */
+  .mangrove-spinner {
+    border: 3px solid #f0fdf4;
+    border-top: 3px solid #16a34a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Custom focus styles */
+  .mangrove-focus:focus {
+    outline: 2px solid #16a34a;
+    outline-offset: 2px;
+  }
+  
+  /* Custom selection styles */
+  ::selection {
+    background: rgba(34, 197, 94, 0.3);
+    color: #064e3b;
+  }
+  
+  .dark ::selection {
+    background: rgba(34, 197, 94, 0.5);
+    color: #f0fdf4;
+  }
+}
+
+@layer utilities {
+  /* Custom spacing utilities */
+  .space-mangrove > * + * {
+    margin-top: 1.5rem;
+  }
+  
+  /* Custom text utilities */
+  .text-mangrove-primary {
+    color: #16a34a;
+  }
+  
+  .text-mangrove-secondary {
+    color: #059669;
+  }
+  
+  .text-mangrove-accent {
+    color: #0d9488;
+  }
+  
+  /* Custom background utilities */
+  .bg-mangrove-light {
+    background-color: #f0fdf4;
+  }
+  
+  .bg-mangrove-medium {
+    background-color: #bbf7d0;
+  }
+  
+  .bg-mangrove-dark {
+    background-color: #064e3b;
+  }
+}
+
