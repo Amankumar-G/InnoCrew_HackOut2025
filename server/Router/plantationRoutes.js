@@ -255,6 +255,39 @@ router.put(
   }
 );
 
+// Delete plantation (user can delete their own, admin can delete any)
+router.delete(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const plantation = await Plantation.findById(id);
 
+      if (!plantation) {
+        return res.status(404).json({ error: "Plantation not found" });
+      }
+
+      // Check if user owns the plantation or is admin
+      if (plantation.projectOwnerId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      // Only allow deletion if plantation is still pending verification
+      if (plantation.status !== "pending_verification" && req.user.role !== "admin") {
+        return res.status(400).json({ error: "Cannot delete plantation after verification has started" });
+      }
+
+      await Plantation.findByIdAndDelete(id);
+
+      return res.json({
+        message: "Plantation deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting plantation:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
 
 export default router;
