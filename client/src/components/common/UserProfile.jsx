@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaUser, FaSignOutAlt, FaCog, FaChevronDown } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { useAppContext } from "../../context/AppContext";
+import { Link } from "react-router-dom";
 
 const UserProfile = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +40,7 @@ const UserProfile = () => {
           ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
       >
         <img
-          src={user.avatar}
+          src="./profile.avif"
           alt={user.name}
           className="w-8 h-8 rounded-full object-cover border-2 border-emerald-500"
         />
@@ -82,7 +83,7 @@ const UserProfile = () => {
           >
             <div className="flex items-center space-x-3">
               <img
-                src={user.avatar}
+                src="./profile.avif"
                 alt={user.name}
                 className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500"
               />
@@ -107,7 +108,8 @@ const UserProfile = () => {
 
           {/* Menu Items */}
           <div className="py-1">
-            <button
+            <Link
+              to="/profile"
               onClick={() => setIsOpen(false)}
               className={`w-full flex items-center px-4 py-2 text-sm transition-colors duration-200 ${
                 theme === "dark"
@@ -117,19 +119,7 @@ const UserProfile = () => {
             >
               <FaUser className="mr-3 h-4 w-4" />
               Profile
-            </button>
-
-            <button
-              onClick={() => setIsOpen(false)}
-              className={`w-full flex items-center px-4 py-2 text-sm transition-colors duration-200 ${
-                theme === "dark"
-                  ? "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <FaCog className="mr-3 h-4 w-4" />
-              Settings
-            </button>
+            </Link>
           </div>
 
           {/* Logout */}

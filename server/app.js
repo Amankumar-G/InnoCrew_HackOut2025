@@ -1,6 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 import express from 'express';
 import http from 'http';
 import chalk from 'chalk';
@@ -14,6 +11,13 @@ import { displayStartupMessage } from './config/start.js';
 import passportConfig from './config/passport.js';
 import { initializeSocket, io } from './config/socket.js';
 import authRoutes from './Router/auth.js'
+import chatRoute from "./Router/chatRouter.js"
+
+import dotenv from 'dotenv';
+dotenv.config();
+
+import complaintRoutes from './Router/complaint.js'
+import './cron/verifyComplaints.js' // Import cron job
 // Display startup banner
 displayStartupMessage();
 
@@ -79,8 +83,11 @@ app.use((req, res, next) => {
   next();
 });
 
+
+app.use("/api/chat", chatRoute);
+
 // Route to Emit a Socket Event
-app.post('/notify', (req, res) => {
+app.post('/api/notify', (req, res) => {
     const { message } = req.body;
 
     if (!message) {
@@ -122,6 +129,7 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/complaints', complaintRoutes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
