@@ -16,7 +16,7 @@ router.post(
 
       // Map uploaded media files
       const mediaFiles = req.files.map(file => ({
-        url: file.path,
+        url: `/uploads/${file.filenamez}`,
         type: file.mimetype.startsWith("video") ? "video" : "photo"
       }));
 
