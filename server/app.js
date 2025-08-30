@@ -14,6 +14,7 @@ import authRoutes from './Router/auth.js'
 import chatRoute from "./Router/chatRouter.js"
 import plantationRoutes from "./Router/plantationRoutes.js"
 import leaderBoard from "./Router/leaderRouter.js"
+import Report from "./Router/reportsRouter.js"
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -135,6 +136,7 @@ app.use("/api/chat", chatRoute);
 app.use("/api/leaderboard",leaderBoard);
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/reports',Report)
 app.use('/api/plantation', plantationRoutes);
 
 // Global Error Handling Middleware

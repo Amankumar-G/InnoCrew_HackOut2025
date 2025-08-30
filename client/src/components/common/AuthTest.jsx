@@ -13,7 +13,7 @@ const AuthTest = () => {
 
     try {
       // Test 1: Check if server is reachable
-      const serverTest = await fetch("http://localhost:8000/api");
+      const serverTest = await fetch(`${import.meta.env.VITE_URL}/api`);
       if (!serverTest.ok) {
         throw new Error("Server is not reachable");
       }

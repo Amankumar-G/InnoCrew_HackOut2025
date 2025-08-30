@@ -16,8 +16,8 @@ export const chat = async (req, res) => {
 
     // ✅ 1. Fetch user summary from MongoDB
  
-    const userSummary = "no summary available"
-    // const userSummary = userData?.summary || "No summary available";
+    // const userSummary = "no summary available"
+    const userSummary = userData?.summary || "No summary available";
 
     // ✅ 2. Get related context from Qdrant
     const embeddings = new OpenAIEmbeddings({

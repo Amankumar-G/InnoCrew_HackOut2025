@@ -24,35 +24,13 @@ const Pdf = () => {
   const chatEndRef = useRef(null);
   const user = useAuth()
 
-  const handleFileUpload = (selectedFile) => {
-    if (!selectedFile) return;
-
-    setFile(selectedFile);
-    const formData = new FormData();
-    formData.append("pdf", selectedFile);
-
-    setUploadProgress("Uploading...");
-
-    axios
-      .post("http://localhost:5000/upload/one", formData, {
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(`Uploading: ${percent}%`);
-        },
-      })
-      .then(() => setUploadProgress("Upload complete!"))
-      .catch(() => setUploadProgress("Upload failed!"));
-  };
-
   const handleSend = () => {
     if (!question.trim()) return;
     setMessages((prev) => [...prev, { type: "user", text: question }]);
     setQuestion("");
     setIsTyping(true);
     axios.post(
-      "http://localhost:8000/api/chat",
+      `${import.meta.env.VITE_URL}/api/chat`,
       { userQuery: question }, // request body
       {
         withCredentials: true, // <-- goes here

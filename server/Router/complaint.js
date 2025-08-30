@@ -12,11 +12,16 @@ router.post(
   upload.array("media"),
   async (req, res) => {
     try {
-      const { description, category, location, damageEstimate, landmark } = req.body;
+      console.log("🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃🙃hiiiiiiiiii");
+      const { description, category, location, damageEstimate, landmark } =
+        req.body;
 
       // Map uploaded media files
-      const mediaFiles = req.files.map(file => ({
+      const mediaFiles = req.files.map((file) => ({
         url: `/uploads/${file.filename}`,
+        type: file.mimetype.startsWith("video") ? "video" : "photo",
+      const mediaFiles = req.files.map(file => ({
+        url: file.path,
         type: file.mimetype.startsWith("video") ? "video" : "photo"
       }));
 
@@ -28,15 +33,16 @@ router.post(
         location: JSON.parse(location),
         media: mediaFiles,
         damageEstimate,
-        landmark
+        landmark,
       });
 
       await complaint.save();
+      console.log("hiiiiii");
 
       return res.status(201).json({
         message: "Complaint submitted successfully",
         complaintId: complaint._id,
-        status: complaint.status
+        status: complaint.status,
       });
     } catch (error) {
       return res.status(500).json({ error: error.message });

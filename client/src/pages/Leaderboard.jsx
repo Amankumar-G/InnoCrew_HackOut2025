@@ -1,18 +1,49 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 
 export default function Leaderboard() {
-  const data = [
-    { rank: 1, name: "Aarav", points: 980 },
-    { rank: 2, name: "Isha", points: 920 },
-    { rank: 3, name: "Kabir", points: 890 },
-    { rank: 4, name: "Riya", points: 860 },
-    { rank: 5, name: "Arjun", points: 840 },
-    { rank: 6, name: "Meera", points: 820 },
-    { rank: 7, name: "Dev", points: 790 },
-    { rank: 8, name: "Ananya", points: 770 },
-    { rank: 9, name: "Vihaan", points: 750 },
-    { rank: 10, name: "Sara", points: 730 },
-  ];
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const user = useAuth();
+  console.log(user);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_URL}/api/leaderboard`, {
+          withCredentials: true, // <-- goes here
+          headers: {
+            Authorization: `Bearer ${user.token}`, // replace with actual token
+          },
+        });
+        console.log(res);
+        console.log(res.data);
+
+        if (res.data.success) {
+          // Sort leaderboard by points (desc)
+          const sorted = [...res.data.leaderboard].sort(
+            (a, b) => b.points - a.points
+          );
+          // Add rank field
+          sorted.forEach((p, i) => (p.rank = i + 1));
+
+          setLeaderboard(sorted);
+          setCurrentUser(res.data.currentUser);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load leaderboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, [user]);
 
   const getRankIcon = (rank) => {
     if (rank === 1) return "🏆";
@@ -58,6 +89,9 @@ export default function Leaderboard() {
     };
   };
 
+  if (loading) return <p className="text-center py-10"><LoadingSpinner></LoadingSpinner></p>;
+  if (error) return <p className="text-center py-10 text-red-500">{error}</p>;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-2 px-4">
       <div className="max-w-7xl mx-auto">
@@ -71,24 +105,54 @@ export default function Leaderboard() {
           </h1>
         </div>
 
+        {/* Current User Card */}
+        {currentUser && (
+          <div className="mb-8 p-6 bg-white rounded-2xl shadow-xl border-l-4 border-green-500">
+            <h2 className="text-2xl font-bold text-green-700 mb-2">
+              Your Stats
+            </h2>
+            <p className="text-gray-800 font-semibold">{currentUser.name}</p>
+            <p className="text-gray-600">
+              Rank:{" "}
+              <span className="font-bold text-green-600">
+                {currentUser.rank || "-"}
+              </span>
+            </p>
+            <p className="text-gray-600">
+              Points:{" "}
+              <span className="font-bold text-green-600">
+                {currentUser.points}
+              </span>
+            </p>
+            <p className="text-gray-600">
+              Carbon credits:{" "}
+              <span className="font-bold text-green-600">
+                {currentUser.carbonCredits.earned}
+              </span>
+            </p>
+            <p className="text-sm text-gray-500">{currentUser.location}</p>
+          </div>
+        )}
+
         {/* Leaderboard Card */}
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden backdrop-blur-sm bg-opacity-95">
           {/* Header Row */}
           <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-200">
             <div className="grid grid-cols-12 gap-4 items-center text-gray-600 font-semibold text-sm uppercase tracking-wider">
               <div className="col-span-2">Rank</div>
-              <div className="col-span-6">Player</div>
+              <div className="col-span-2">Player</div>
               <div className="col-span-4 text-right">Points</div>
+              <div className="col-span-4 text-right">Carbon Credits</div>
             </div>
           </div>
 
           {/* Player Rows */}
           <div className="divide-y divide-gray-100">
-            {data.map((player, index) => {
+            {leaderboard.map((player, index) => {
               const styles = getRankStyles(player.rank);
               return (
                 <div
-                  key={player.rank}
+                  key={player._id}
                   className={`${styles.container} transition-all duration-300 ease-in-out hover:shadow-lg`}
                   style={{
                     animationDelay: `${index * 100}ms`,
@@ -106,7 +170,7 @@ export default function Leaderboard() {
                     </div>
 
                     {/* Name */}
-                    <div className="col-span-6">
+                    <div className="col-span-2">
                       <div
                         className={`${styles.name} text-xl flex items-center`}
                       >
@@ -122,8 +186,21 @@ export default function Leaderboard() {
                       <div
                         className={`${styles.points} text-xl flex items-center justify-end`}
                       >
-                        <div className="bg-gray-100 rounded-full px-4 py-2 text-sm font-semibold text-gray-700 mr-3">
+                        <div className="bg-gray-100 rounded-full px-4 py-4 text-sm font-semibold text-gray-700 mr-3">
                           {player.points} pts
+                        </div>
+                        {player.rank <= 3 && (
+                          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-span-4 text-right">
+                      <div
+                        className={`${styles.points} text-xl flex items-center justify-end`}
+                      >
+                        <div className="bg-gray-100 rounded-full px-4 py-2 text-sm font-semibold text-gray-700 mr-3">
+                          {player.carbonCredits.earned} credites
                         </div>
                         {player.rank <= 3 && (
                           <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
