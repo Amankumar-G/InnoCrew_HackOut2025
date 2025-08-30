@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Upload, Check, Send } from "lucide-react";
 import axios from "axios";
 import { useAppContext } from "../context/AppContext"; // to get theme
+import { useAuth } from "../context/AuthContext";
 
 // Typing Animation Component
 const TypingAnimation = () => (
@@ -21,46 +22,24 @@ const Pdf = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
-
-  const handleFileUpload = (selectedFile) => {
-    if (!selectedFile) return;
-
-    setFile(selectedFile);
-    const formData = new FormData();
-    formData.append("pdf", selectedFile);
-
-    setUploadProgress("Uploading...");
-
-    axios
-      .post("http://localhost:5000/upload/one", formData, {
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(`Uploading: ${percent}%`);
-        },
-      })
-      .then(() => setUploadProgress("Upload complete!"))
-      .catch(() => setUploadProgress("Upload failed!"));
-  };
-
-  const handleFileChange = (e) => handleFileUpload(e.target.files[0]);
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    handleFileUpload(e.dataTransfer.files[0]);
-  };
+  const user = useAuth()
 
   const handleSend = () => {
     if (!question.trim()) return;
     setMessages((prev) => [...prev, { type: "user", text: question }]);
     setQuestion("");
     setIsTyping(true);
-
-    axios
-      .post("http://localhost:8000/api/chat", { withCredentials: true, userQuery: question })
+    axios.post(
+      `${import.meta.env.VITE_URL}/api/chat`,
+      { userQuery: question }, // request body
+      {
+        withCredentials: true, // <-- goes here
+        headers: {
+          Authorization: `Bearer ${user.token}`, // replace with actual token
+        },
+      }
+    )
+    
       .then((res) => {
         const botResponse = res.data.message || "No response";
         setMessages((prev) => [...prev, { type: "bot", text: botResponse }]);
@@ -68,9 +47,9 @@ const Pdf = () => {
       .finally(() => setIsTyping(false));
   };
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // useEffect(() => {
+  //   chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]);
 
   return (
     <div

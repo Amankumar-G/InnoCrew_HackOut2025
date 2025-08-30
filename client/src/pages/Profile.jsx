@@ -18,9 +18,10 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useAppContext } from "../context/AppContext";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 
 // API Base URL
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "${import.meta.env.VITE_URL}/api";
 
 const Profile = () => {
   const { user, token, getProfile } = useAuth();
@@ -173,12 +174,7 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your profile...</p>
-        </div>
-      </div>
+      <LoadingSpinner></LoadingSpinner>
     );
   }
 
