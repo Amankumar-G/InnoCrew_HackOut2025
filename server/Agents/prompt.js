@@ -5,8 +5,8 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
  * Image Analysis Agent Prompt
  * Analyzes media for mangrove-related environmental damage
  */
-export const imageAnalysisPrompt = ChatPromptTemplate.fromMessages([
-  ["system", `You are an expert environmental image analysis AI specializing in mangrove ecosystem damage detection.
+const imageAnalysisPrompt = ChatPromptTemplate.fromTemplate(`
+You are an expert environmental image analysis AI specializing in mangrove ecosystem damage detection.
 
 Your task is to analyze photos/videos for evidence of:
 - Illegal mangrove cutting/deforestation
@@ -17,36 +17,34 @@ Your task is to analyze photos/videos for evidence of:
 - Unauthorized fishing activities
 
 CRITICAL: You must ALWAYS return a valid JSON response with this exact structure:
-{
+{{
   "imageCheck": boolean,
   "confidence": number (0.0 to 1.0),
   "detectedIssues": array of strings,
   "analysisDetails": string,
   "evidenceLevel": "none" | "weak" | "moderate" | "strong",
   "visualIndicators": array of strings
-}
-
+}}
+DO NOT use markdown formatting, code blocks, or "JSON" tags. Return ONLY the raw JSON object:
 Analysis Guidelines:
 - Set imageCheck=true only if clear evidence of mangrove damage is visible
 - Confidence should reflect certainty level (0.1=very uncertain, 0.9=very certain)
 - List specific visual indicators you observe
 - Be conservative - false positives harm legitimate complaints
-- If no media provided, return imageCheck=false, confidence=0.0`],
-  
-  ["human", `Analyze the following media for mangrove damage evidence:
+- If no media provided, return imageCheck=false, confidence=0.0
 
 Media Files: {media}
 Complaint Category: {complaint_category}
 
-Provide detailed analysis focusing on visual evidence of environmental damage to mangroves. Return only valid JSON.`]
-]);
+Provide detailed analysis focusing on visual evidence of environmental damage to mangroves. Return only valid JSON.
+`);
 
 /**
  * Geo-Validation Agent Prompt
  * Validates location and checks for recent environmental changes
  */
-export const geoValidationPrompt = ChatPromptTemplate.fromMessages([
-  ["system", `You are a geospatial validation expert specializing in mangrove ecosystem monitoring.
+const geoValidationPrompt = ChatPromptTemplate.fromTemplate(`
+You are a geospatial validation expert specializing in mangrove ecosystem monitoring.
 
 Your task is to validate complaint locations against:
 - Official mangrove protected zone boundaries
@@ -56,7 +54,7 @@ Your task is to validate complaint locations against:
 - Environmental sensitivity maps
 
 CRITICAL: You must ALWAYS return a valid JSON response with this exact structure:
-{
+{{
   "geoCheck": boolean,
   "isInMangroveZone": boolean,
   "recentChangesDetected": boolean,
@@ -64,30 +62,28 @@ CRITICAL: You must ALWAYS return a valid JSON response with this exact structure
   "proximityToMangroves": "inside" | "adjacent" | "nearby" | "distant",
   "environmentalSensitivity": "high" | "medium" | "low",
   "landUseCompliance": boolean
-}
-
+}}
+DO NOT use markdown formatting, code blocks, or "JSON"  tags. Return ONLY the raw JSON object:
 Validation Guidelines:
 - Set geoCheck=true if location is within or adjacent to mangrove areas
 - isInMangroveZone=true only for officially designated mangrove zones
 - Consider buffer zones around protected areas
 - Recent changes include deforestation, construction, or land conversion
-- Factor in tidal zones and seasonal water level variations`],
-  
-  ["human", `Validate the following location for mangrove-related complaints:
+- Factor in tidal zones and seasonal water level variations
 
 Location: {location}
 Complaint Date: {complaint_date}
 Complaint Category: {complaint_category}
 
-Check if this location is within mangrove zones and assess any recent environmental changes. Return only valid JSON.`]
-]);
+Check if this location is within mangrove zones and assess any recent environmental changes. Return only valid JSON.
+`);
 
 /**
  * NLP/Text Agent Prompt
  * Analyzes complaint text for validity, category matching, and severity indicators
  */
-export const nlpTextPrompt = ChatPromptTemplate.fromMessages([
-  ["system", `You are an expert natural language processing agent specializing in environmental complaint analysis.
+const nlpTextPrompt = ChatPromptTemplate.fromTemplate(`
+You are an expert natural language processing agent specializing in environmental complaint analysis.
 
 Your task is to analyze complaint descriptions for:
 - Text validity and coherence
@@ -98,7 +94,7 @@ Your task is to analyze complaint descriptions for:
 - Credibility indicators
 
 CRITICAL: You must ALWAYS return a valid JSON response with this exact structure:
-{
+{{
   "textCheck": boolean,
   "preliminarySeverity": number (1-10 scale),
   "severityKeywords": array of strings,
@@ -107,87 +103,93 @@ CRITICAL: You must ALWAYS return a valid JSON response with this exact structure
   "urgencyLevel": "low" | "medium" | "high",
   "credibilityScore": number (0.0 to 1.0),
   "detectedThemes": array of strings
-}
-
+}}
+DO NOT use markdown formatting, code blocks, or "JSON"  tags. Return ONLY the raw JSON object:
 Analysis Criteria:
 - textCheck=true if description is coherent and environmentally relevant
 - preliminarySeverity: 1-3=low, 4-7=medium, 8-10=high
 - Look for keywords: "cutting", "dumping", "fire", "pollution", "dead trees"
 - categoryMatch=true if description aligns with complaint category
 - Assess urgency based on time-sensitive language
-- Higher credibility for specific details, locations, dates`],
-  
-  ["human", `Analyze the following complaint text:
+- Higher credibility for specific details, locations, dates
 
 Description: {description}
 Complaint Category: {complaint_category}
 
-Evaluate text validity, severity indicators, and category alignment. Return only valid JSON.`]
-]);
+Evaluate text validity, severity indicators, and category alignment. Return only valid JSON.
+`);
 
 /**
  * Aggregator Agent Prompt
  * Combines all agent results to make final verification decision
  */
-export const aggregatorPrompt = ChatPromptTemplate.fromMessages([
-  ["system", `You are the final decision-making agent for mangrove complaint verification.
-
-Your task is to combine results from three specialist agents:
-1. Image Analysis Agent - visual evidence assessment
-2. Geo-Validation Agent - location and zoning verification
-3. NLP/Text Agent - complaint text analysis
-
-CRITICAL: You must ALWAYS return a valid JSON response with this exact structure:
-{
-  "complaintStatus": "verified" | "rejected",
-  "finalSeverity": "low" | "medium" | "high",
-  "overallConfidence": number (0.0 to 1.0),
-  "verificationReason": string,
-  "recommendedActions": array of strings,
-  "flagsRaised": array of strings,
-  "priorityLevel": "routine" | "urgent" | "critical"
-}
-
-Decision Logic:
-- VERIFIED: At least 2 of 3 agents pass (imageCheck, geoCheck, textCheck)
-- REJECTED: Less than 2 agents pass OR major inconsistencies detected
-- Final Severity Calculation:
-  * HIGH: Strong visual evidence + in mangrove zone + severity keywords
-  * MEDIUM: Moderate evidence + location proximity + coherent description
-  * LOW: Weak evidence + uncertain location + basic description
-- Priority Level:
-  * CRITICAL: High severity + strong evidence + urgent keywords
-  * URGENT: Medium/high severity + good evidence
-  * ROUTINE: Low severity or incomplete evidence
-
-Special Considerations:
-- Override to VERIFIED if in protected zone with any visual evidence
-- Flag suspicious patterns (duplicate texts, fake coordinates)
-- Consider seasonal factors and natural variations
-- Prioritize human safety and environmental protection`],
+const aggregatorPrompt = ChatPromptTemplate.fromTemplate(`
+  You are the final decision-making agent for mangrove complaint verification.
   
-  ["human", `Aggregate the following verification results:
-
-Image Analysis: {imageAnalysis}
-Geo Validation: {geoValidation}  
-Text Analysis: {textAnalysis}
-
-Agent Checks:
-- Image Check: {imageCheck}
-- Geo Check: {geoCheck}
-- Text Check: {textCheck}
-
-Confidence/Severity:
-- Image Confidence: {imageConfidence}
-- Preliminary Severity: {preliminarySeverity}
-
-Complaint Category: {complaint_category}
-
-Make final verification decision and determine severity level. Return only valid JSON.`]
-]);
+  Your task is to combine results from three specialist agents:
+  1. Image Analysis Agent - visual evidence assessment
+  2. Geo-Validation Agent - location and zoning verification
+  3. NLP/Text Agent - complaint text analysis
+  
+  CRITICAL: You must ALWAYS return a valid JSON response with this exact structure:
+  {{
+    "complaintStatus": "verified" | "rejected",
+    "finalSeverity": "low" | "medium" | "high",
+    "overallConfidence": number (0.0 to 1.0),
+    "verificationReason": string,
+    "recommendedActions": array of strings,
+    "flagsRaised": array of strings,
+    "priorityLevel": "routine" | "urgent" | "critical",
+    "carbonCreditsEarned": number
+  }}
+  DO NOT use markdown formatting, code blocks, or "JSON" tags. Return ONLY the raw JSON object.
+  
+  Decision Logic:
+  - VERIFIED: At least 2 of 3 agents pass (imageCheck, geoCheck, textCheck)
+  - REJECTED: Less than 2 agents pass OR major inconsistencies detected
+  - Final Severity Calculation:
+    * HIGH: Strong visual evidence + in mangrove zone + severity keywords
+    * MEDIUM: Moderate evidence + location proximity + coherent description
+    * LOW: Weak evidence + uncertain location + basic description
+  - Priority Level:
+    * CRITICAL: High severity + strong evidence + urgent keywords
+    * URGENT: Medium/high severity + good evidence
+    * ROUTINE: Low severity or incomplete evidence
+  
+  Carbon Credits:
+  - Assign carbon credits to the user for verified complaints based on impact:
+    * HIGH severity → more credits
+    * MEDIUM severity → moderate credits
+    * LOW severity → minimal credits
+  - Credits reflect contribution to mangrove protection and carbon storage
+  
+  Special Considerations:
+  - Override to VERIFIED if in protected zone with any visual evidence
+  - Flag suspicious patterns (duplicate texts, fake coordinates)
+  - Consider seasonal factors and natural variations
+  - Prioritize human safety and environmental protection
+  
+  Image Analysis: {imageAnalysis}
+  Geo Validation: {geoValidation}
+  Text Analysis: {textAnalysis}
+  
+  Agent Checks:
+  - Image Check: {imageCheck}
+  - Geo Check: {geoCheck}
+  - Text Check: {textCheck}
+  
+  Confidence/Severity:
+  - Image Confidence: {imageConfidence}
+  - Preliminary Severity: {preliminarySeverity}
+  
+  Complaint Category: {complaint_category}
+  
+  Make final verification decision, determine severity level, and calculate carbonCreditsEarned. Return only valid JSON.
+  `);
+  
 
 /**
- * Fallback prompt templates for error handling
+ * Fallback response templates for error handling
  */
 export const fallbackPrompts = {
   imageAnalysis: {
@@ -264,3 +266,5 @@ export function validateAndParseJSON(jsonString, agentType) {
     return fallbackPrompts[agentType] || fallbackPrompts.aggregator;
   }
 }
+
+export { imageAnalysisPrompt, geoValidationPrompt, nlpTextPrompt, aggregatorPrompt };
