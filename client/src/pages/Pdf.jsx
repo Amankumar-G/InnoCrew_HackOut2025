@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Upload, Check, Send } from "lucide-react";
 import axios from "axios";
 import { useAppContext } from "../context/AppContext"; // to get theme
+import { useAuth } from "../context/AuthContext";
 
 // Typing Animation Component
 const TypingAnimation = () => (
@@ -21,6 +22,7 @@ const Pdf = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
+  const user = useAuth()
 
   const handleFileUpload = (selectedFile) => {
     if (!selectedFile) return;
@@ -44,23 +46,22 @@ const Pdf = () => {
       .catch(() => setUploadProgress("Upload failed!"));
   };
 
-  const handleFileChange = (e) => handleFileUpload(e.target.files[0]);
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    handleFileUpload(e.dataTransfer.files[0]);
-  };
-
   const handleSend = () => {
     if (!question.trim()) return;
     setMessages((prev) => [...prev, { type: "user", text: question }]);
     setQuestion("");
     setIsTyping(true);
-
-    axios
-      .post("http://localhost:8000/api/chat", { withCredentials: true, userQuery: question })
+    axios.post(
+      "http://localhost:8000/api/chat",
+      { userQuery: question }, // request body
+      {
+        withCredentials: true, // <-- goes here
+        headers: {
+          Authorization: `Bearer ${user.token}`, // replace with actual token
+        },
+      }
+    )
+    
       .then((res) => {
         const botResponse = res.data.message || "No response";
         setMessages((prev) => [...prev, { type: "bot", text: botResponse }]);
@@ -68,9 +69,9 @@ const Pdf = () => {
       .finally(() => setIsTyping(false));
   };
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // useEffect(() => {
+  //   chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]);
 
   return (
     <div

@@ -9,7 +9,7 @@
 
 // async function init() {
 //   try {
-//     const filePath = "C:/Users/avani/Downloads/pdfcontent.pdf"; 
+//     const filePath = "D:/DAIICT/Best-Practice-Guidelines-for-Mangrove-Restoration_spreadsv5.pdf"; 
 //     // 1. Load the PDF
 //     console.log("📄 Loading PDF:", filePath);
 //     const loader = new PDFLoader(filePath);
