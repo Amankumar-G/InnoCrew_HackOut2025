@@ -23,17 +23,30 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { theme, toggleTheme } = useAppContext();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth(); // Added user from useAuth
 
-  const navigation = [
+  // Base navigation items
+  const baseNavigation = [
     { name: "Report Incident", href: "/reportIncident", icon: FaMapMarkedAlt },
     { name: "Restoration", href: "/restoration", icon: FaTree },
     { name: "Carbon Credits", href: "/carbon-credits", icon: FaLeaf },
     { name: "Leaderboard", href: "/leaderboard", icon: FaMedal },
-    { name: "PDF Chat", href: "/pdfChat", icon: FaFilePdf }, // ✅ new link
+    { name: "PDF Chat", href: "/pdfChat", icon: FaFilePdf },
   ];
 
-  const isActive = (path) => location.pathname === path;
+  // Get the appropriate profile path based on user role
+  const getProfilePath = () => {
+    return user?.role === "admin" ? "/admin-profile" : "/profile";
+  };
+
+  const isActive = (path) => {
+    // Handle profile paths specially
+    if (path === "/profile" || path === "/admin-profile") {
+      const currentProfilePath = getProfilePath();
+      return location.pathname === currentProfilePath;
+    }
+    return location.pathname === path;
+  };
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm sticky top-0 z-50">
@@ -43,8 +56,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
-                <FaLeaf className="text-white w-4 h-4" />{" "}
-                {/* ✅ consistent size + color */}
+                <FaLeaf className="text-white w-4 h-4" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 MARC
@@ -54,7 +66,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            {navigation.map((item) => {
+            {baseNavigation.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
@@ -71,19 +83,6 @@ const Navbar = () => {
                 </Link>
               );
             })}
-
-            {/* Dark/Light Toggle */}
-            {/* <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? (
-                <FaSun className="w-5 h-5" />
-              ) : (
-                <FaMoon className="w-5 h-5" />
-              )}
-            </button> */}
 
             {/* Auth Section */}
             {isAuthenticated ? (
@@ -131,7 +130,7 @@ const Navbar = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white/95 backdrop-blur-md rounded-lg mt-2 shadow-lg">
-              {navigation.map((item) => {
+              {baseNavigation.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
