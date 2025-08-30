@@ -21,6 +21,7 @@ const LazyHome = React.lazy(() => import("./pages/Home"));
 const LazyLogin = React.lazy(() => import("./pages/Login"));
 const LazyNotFound = React.lazy(() => import("./pages/NotFound"));
 const LazyProfile = React.lazy(() => import("./pages/Profile"));
+const LazyAdminProfile = React.lazy(() => import("./pages/AdminProfile")); // Added AdminProfile
 
 const Leaderboard = React.lazy(() => import("./pages/Leaderboard"));
 const CarbonCredits = React.lazy(() => import("./pages/CarbonCredits"));
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: <LazyProfile />,
+      },
+      {
+        path: "/admin-profile", // Added admin profile route
+        element: <LazyAdminProfile />,
       },
       {
         path: "/reportIncident",

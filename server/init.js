@@ -9,39 +9,42 @@ dotenv.config();
 
 async function init() {
   try {
-    const filePath = "E:/Best-Practice-Guidelines-for-Mangrove-Restoration_spreadsv5[1].pdf"; 
-    // 1. Load the PDF
+    const filePath = "C:/Users/avani/Downloads/pdfcontent.pdf";
+
     console.log("📄 Loading PDF:", filePath);
     const loader = new PDFLoader(filePath);
     const rawDocs = await loader.load();
 
-    // 2. Split text into chunks (better for embeddings)
     const splitter = new CharacterTextSplitter({
       separator: "\n",
       chunkSize: 1000,
       chunkOverlap: 200,
     });
     const docs = await splitter.splitDocuments(rawDocs);
-
     console.log(`✅ Loaded and split into ${docs.length} chunks`);
 
-    // 3. Create embeddings
+    // Embeddings
     const embeddings = new OpenAIEmbeddings({
       model: "text-embedding-3-small",
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // 4. Initialize / connect vector store
-    const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
-      url: "http://localhost:6333", // e.g. http://localhost:6333
+    // OPTION A: Create the collection (if it doesn't exist) and upload in one go
+    await QdrantVectorStore.fromDocuments(docs, embeddings, {
+      url: process.env.QDRANT_URL,          // e.g. https://...cloud.qdrant.io:6333
+      apiKey: process.env.QDRANT_API_KEY,   // <-- Cloud DB API key
       collectionName: "pdf-docs",
     });
 
-    // 5. Add documents only if not already present
-    // Optional: you can check collection info if you want strict "once only"
-    await vectorStore.addDocuments(docs);
+    // OPTION B: If the collection already exists, connect and add docs
+    // const vectorStore = await QdrantVectorStore.fromExistingCollection(embeddings, {
+    //   url: process.env.QDRANT_URL,
+    //   apiKey: process.env.QDRANT_API_KEY,
+    //   collectionName: "pdf-docs",
+    // });
+    // await vectorStore.addDocuments(docs);
 
-    console.log("🎉 PDF uploaded & embedded into Qdrant successfully!");
+    console.log("🎉 PDF uploaded & embedded into Qdrant Cloud successfully!");
     process.exit(0);
   } catch (err) {
     console.error("❌ Error uploading PDF:", err);
@@ -50,3 +53,4 @@ async function init() {
 }
 
 init();
+

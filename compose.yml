@@ -41,6 +41,7 @@ services:
       start_period: 40s
     environment:
       - NODE_ENV=production
+      - VITE_URL="http://localhost"
 
   # Node.js backend service
   server:
