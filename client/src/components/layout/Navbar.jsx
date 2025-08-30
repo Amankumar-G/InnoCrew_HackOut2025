@@ -36,24 +36,24 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="sticky top-0 z-50 border-b shadow-sm bg-white/80 backdrop-blur-md border-gray-200/50">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
-                <FaLeaf className="text-white w-4 h-4" />{" "}
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600">
+                <FaLeaf className="w-4 h-4 text-white" />{" "}
                 {/* ✅ consistent size + color */}
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              <span className="text-xl font-bold text-transparent bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text">
                 MARC
               </span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="items-center hidden space-x-6 md:flex">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -75,7 +75,7 @@ const Navbar = () => {
             {/* Dark/Light Toggle */}
             {/* <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
+              className="p-2 text-gray-700 transition-colors rounded-lg hover:text-green-600 hover:bg-green-50"
               aria-label="Toggle theme"
             >
               {theme === "dark" ? (
@@ -91,20 +91,20 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 transition-all duration-200"
+                className="flex items-center px-4 py-2 space-x-2 font-medium text-white transition-all duration-200 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
-                <FaSignInAlt className="h-4 w-4" />
+                <FaSignInAlt className="w-4 h-4" />
                 <span>Join Community</span>
               </Link>
             )}
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className="flex items-center space-x-2 md:hidden">
             {/* Dark/Light Toggle for mobile */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
+              className="p-2 text-gray-700 transition-colors rounded-lg hover:text-green-600 hover:bg-green-50"
               aria-label="Toggle theme"
             >
               {theme === "dark" ? (
@@ -116,7 +116,7 @@ const Navbar = () => {
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
+              className="p-2 text-gray-700 transition-colors rounded-lg hover:text-green-600 hover:bg-green-50"
             >
               {isMobileMenuOpen ? (
                 <FaTimes className="w-5 h-5" />
@@ -130,7 +130,7 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-white/95 backdrop-blur-md rounded-lg mt-2 shadow-lg">
+            <div className="px-2 pt-2 pb-3 mt-2 space-y-1 rounded-lg shadow-lg bg-white/95 backdrop-blur-md">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -159,7 +159,7 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 transition-all duration-200"
+                  className="flex items-center px-3 py-2 space-x-3 text-sm font-medium text-white transition-all duration-200 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
                   <FaSignInAlt className="w-4 h-4" />
                   <span>Join Community</span>

@@ -16,9 +16,9 @@ router.post(
         req.body;
 
       // Map uploaded media files
-      const mediaFiles = req.files.map((file) => ({
-        url: file.path,
-        type: file.mimetype.startsWith("video") ? "video" : "photo",
+      const mediaFiles = req.files.map(file => ({
+        url: `/uploads/${file.filenamez}`,
+        type: file.mimetype.startsWith("video") ? "video" : "photo"
       }));
 
       // Include user ID from authenticated JWT
