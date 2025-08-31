@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 // Layout Components
 import AppLayout from "./components/layout/AppLayout";
@@ -72,11 +73,18 @@ const router = createBrowserRouter([
       },
       {
         path: "/leaderboard",
-        element: <Leaderboard />,
-      },
+        element: (
+          <ProtectedRoute>
+        <Leaderboard />
+          </ProtectedRoute>
+      )},
       {
         path: "/pdfChat",
-        element: <Pdf />,
+        element: (
+          <ProtectedRoute>
+        <Pdf />
+          </ProtectedRoute>
+      ),
       },
       {
         path: "/profile",
@@ -88,11 +96,19 @@ const router = createBrowserRouter([
       },
       {
         path: "/reportIncident",
-        element: <ReportIncident />,
+        element: (
+          <ProtectedRoute>
+        <ReportIncident />
+          </ProtectedRoute>
+      ),
       },
       {
         path: "/carbon-credits",
-        element: <CarbonCredits/>
+        element: (
+          <ProtectedRoute>
+        <CarbonCredits/>
+          </ProtectedRoute>
+      )
       },
       {
         path: "/restoration",
