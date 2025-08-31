@@ -30,7 +30,7 @@ const Pdf = () => {
     setQuestion("");
     setIsTyping(true);
     axios.post(
-      `/api/chat`,
+      `${import.meta.env.VITE_URL}/api/chat`,
       { userQuery: question }, // request body
       {
         withCredentials: true, // <-- goes here
